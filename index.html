@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDG 情緒支持 Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-pill">STOP / DECIDE / GO</span>
+        <h1>SDG 情緒支持 Prototype</h1>
+      </div>
+      <button class="ghost-button" id="resetFlowButton" type="button">重新開始</button>
+    </header>
+
+    <main class="layout">
+      <section class="panel panel-main">
+        <div class="stepbar">
+          <div class="step active" data-step-indicator="checkin">1. 情緒確認</div>
+          <div class="step" data-step-indicator="breathing">2. 呼吸安定</div>
+          <div class="step" data-step-indicator="grounding">3. Grounding</div>
+          <div class="step" data-step-indicator="reflect">4. 反思整理</div>
+          <div class="step" data-step-indicator="complete">5. 完成</div>
+        </div>
+
+        <section class="screen active" data-screen="checkin">
+          <div class="eyebrow">Step 1</div>
+          <h2>先確認你現在的感受</h2>
+          <p class="lead">這一層是主流程入口。AR 模組會在下一步啟動，但我們先記住使用者此刻的情緒狀態。</p>
+
+          <div class="emotion-grid">
+            <button class="emotion-card" data-emotion="angry" type="button">
+              <span class="emotion-emoji">😤</span>
+              <strong>生氣</strong>
+              <span>需要先把能量放下來</span>
+            </button>
+            <button class="emotion-card" data-emotion="sad" type="button">
+              <span class="emotion-emoji">😢</span>
+              <strong>難過</strong>
+              <span>需要被安穩地接住</span>
+            </button>
+            <button class="emotion-card" data-emotion="confused" type="button">
+              <span class="emotion-emoji">😵</span>
+              <strong>混亂</strong>
+              <span>需要先回到當下</span>
+            </button>
+            <button class="emotion-card" data-emotion="ok" type="button">
+              <span class="emotion-emoji">🙂</span>
+              <strong>還可以</strong>
+              <span>想做一次預防性整理</span>
+            </button>
+          </div>
+
+          <div class="cta-row">
+            <button class="primary-button" id="startFlowButton" type="button" disabled>開始進入安定流程</button>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="breathing">
+          <div class="eyebrow">Step 2</div>
+          <h2>先進行 AR 呼吸安定</h2>
+          <p class="lead">這一步會帶你進入 AR-ball 模組。建議在手機或可用相機的裝置上開啟，完成後再回到主流程。</p>
+
+          <div class="module-card">
+            <div>
+              <h3>Breathing Module</h3>
+              <p>8th Wall / A-Frame AR 呼吸球，含放置球體、視覺呼吸節奏與語音引導。</p>
+            </div>
+            <div class="module-actions">
+              <a class="primary-button inline-button" href="./modules/ar-ball/index.html" target="_blank" rel="noreferrer">開啟 AR-ball</a>
+              <button class="secondary-button inline-button" id="breathingDoneButton" type="button">我已完成這一步</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="grounding">
+          <div class="eyebrow">Step 3</div>
+          <h2>接著進入 Grounding 模組</h2>
+          <p class="lead">這一步會開啟本專案內的 grounding 模組。部署到 Vercel 後，它會直接呼叫同一個專案裡的 API。</p>
+
+          <div class="module-card">
+            <div>
+              <h3>Grounding Module</h3>
+              <p>相機觀察、聲音辨識與觸感引導，並透過 Gemini 做視覺物件偵測。</p>
+            </div>
+            <div class="module-actions">
+              <a class="primary-button inline-button" href="./modules/ar-grounding/index.html" target="_blank" rel="noreferrer">開啟 ar-grounding</a>
+              <button class="secondary-button inline-button" id="groundingDoneButton" type="button">我已完成這一步</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="reflect">
+          <div class="eyebrow">Step 4</div>
+          <h2>整理一下現在的狀態</h2>
+          <p class="lead">呼吸與 grounding 後，讓使用者快速標記感受、選一個下一步行動，這一層先用 shell 版本接起來。</p>
+
+          <div class="field-stack">
+            <label class="field-label" for="intensityRange">現在的情緒強度</label>
+            <input id="intensityRange" class="range-input" type="range" min="1" max="5" value="3">
+            <div class="range-scale">
+              <span>1 安穩</span>
+              <strong id="intensityValue">3</strong>
+              <span>5 很強烈</span>
+            </div>
+          </div>
+
+          <div class="field-stack">
+            <span class="field-label">此刻比較需要哪一種幫助？</span>
+            <div class="choice-list" id="actionChoices">
+              <button class="choice-chip" data-action="rest" type="button">先休息 3 分鐘</button>
+              <button class="choice-chip" data-action="talk" type="button">找人聊一下</button>
+              <button class="choice-chip" data-action="water" type="button">喝水走動</button>
+              <button class="choice-chip" data-action="task" type="button">回到一個小任務</button>
+            </div>
+          </div>
+
+          <div class="field-stack">
+            <label class="field-label" for="reflectionNote">簡短紀錄</label>
+            <textarea id="reflectionNote" class="text-area" placeholder="例如：我剛剛卡住是因為環境太吵，現在比較能專心了。"></textarea>
+          </div>
+
+          <div class="cta-row">
+            <button class="primary-button" id="completeFlowButton" type="button" disabled>完成本次流程</button>
+          </div>
+        </section>
+
+        <section class="screen" data-screen="complete">
+          <div class="eyebrow">Done</div>
+          <h2>這次的流程已經串起來了</h2>
+          <p class="lead">目前這個 shell 版本已經能把主流程與兩個 AR 模組接在一起，適合作為下一輪正式整合的骨架。</p>
+
+          <div class="summary-card" id="summaryCard"></div>
+
+          <div class="cta-row">
+            <button class="primary-button" id="restartButton" type="button">再跑一次</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="panel panel-side">
+        <div class="side-card">
+          <div class="eyebrow">Flow State</div>
+          <h3>即時狀態</h3>
+          <dl class="state-list">
+            <div>
+              <dt>情緒</dt>
+              <dd id="stateEmotion">尚未選擇</dd>
+            </div>
+            <div>
+              <dt>呼吸模組</dt>
+              <dd id="stateBreathing">未完成</dd>
+            </div>
+            <div>
+              <dt>Grounding 模組</dt>
+              <dd id="stateGrounding">未完成</dd>
+            </div>
+            <div>
+              <dt>強度</dt>
+              <dd id="stateIntensity">3</dd>
+            </div>
+            <div>
+              <dt>下一步</dt>
+              <dd id="stateAction">尚未選擇</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="side-card">
+          <div class="eyebrow">Integration Notes</div>
+          <ul class="note-list">
+            <li>AR-ball 目前以獨立頁面方式掛接，避免和主殼爭奪相機控制權。</li>
+            <li>AR-grounding 現在改為本專案內的模組頁，部署時只要補上 GEMINI_API_KEY 就能直接使用。</li>
+            <li>下一步可以把這個 shell 升級成 React 或 Vite 專案，或再把模組做更細的狀態回傳。</li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

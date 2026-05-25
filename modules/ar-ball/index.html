@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AR 呼吸球</title>
+
+<script crossorigin="anonymous" src="https://cdn.8thwall.com/web/aframe/8frame-1.5.0.min.js"></script>
+<script crossorigin="anonymous" src="https://cdn.8thwall.com/web/xrextras/xrextras.js"></script>
+<script crossorigin="anonymous"
+  src="https://cdn.jsdelivr.net/npm/@8thwall/engine-binary@1/dist/xr.js"
+  async="true" data-preload-chunks="slam"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --tb:#17C9AF;--tm:#12A08C;--td:#0D7A6B;
+  --tp:#A8F5EA;--t2:#7ED8CB;--t3:#3D8F83;
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  overflow:hidden;background:#000;color:#D4F5EF;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+
+/* ── HUD：pointer-events:none 讓觸控穿透到 A-Frame 場景 ── */
+#hud{position:fixed;inset:0;z-index:100;pointer-events:none;}
+
+/* 頂部 */
+#top-bar{
+  position:absolute;top:0;left:0;right:0;
+  padding:max(env(safe-area-inset-top,0px),20px) 20px 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+#top-title{font-size:14px;font-weight:600;color:var(--tb);text-shadow:0 1px 8px rgba(0,0,0,.8);}
+#top-status{font-size:12px;color:var(--t2);text-shadow:0 1px 8px rgba(0,0,0,.8);}
+
+/* 語音條 */
+#vbar{
+  position:absolute;top:68px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(11,46,41,.9);border:.5px solid #0F4A42;border-radius:20px;
+  padding:5px 14px;white-space:nowrap;opacity:0;transition:opacity .35s;pointer-events:none;
+}
+#vbar.on{opacity:1;}
+.vw{display:flex;align-items:flex-end;gap:2px;height:12px;}
+.vw span{display:block;width:3px;border-radius:2px;background:var(--tb);
+  animation:vwa .75s ease-in-out infinite;}
+.vw span:nth-child(1){height:5px;animation-delay:0s}
+.vw span:nth-child(2){height:10px;animation-delay:.15s}
+.vw span:nth-child(3){height:5px;animation-delay:.3s}
+@keyframes vwa{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.35)}}
+#vt{font-size:12px;color:var(--t2);letter-spacing:.04em;}
+
+/* 掃描提示 */
+#scan{
+  position:absolute;bottom:210px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  transition:opacity .4s;
+}
+#scan.hide{opacity:0;pointer-events:none;}
+.s-ring{
+  width:64px;height:64px;border-radius:50%;
+  border:2.5px solid var(--tb);animation:srp 1.6s ease-in-out infinite;
+}
+@keyframes srp{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.2);opacity:.4}}
+#scan-txt{font-size:13px;color:var(--t2);text-shadow:0 1px 8px rgba(0,0,0,.9);letter-spacing:.04em;}
+
+/* 呼吸顯示 */
+#breath{position:absolute;bottom:180px;left:0;right:0;text-align:center;opacity:0;transition:opacity .5s;}
+#breath.on{opacity:1;}
+#b-phase{
+  font-size:30px;font-weight:700;color:var(--tb);
+  text-shadow:0 0 24px rgba(23,201,175,.8),0 2px 8px rgba(0,0,0,.7);
+}
+#b-sub{font-size:13px;color:var(--t2);text-shadow:0 1px 6px rgba(0,0,0,.8);margin-top:2px;}
+
+/* 輪次點 */
+#dots{position:absolute;bottom:158px;left:0;right:0;display:flex;gap:7px;justify-content:center;opacity:0;transition:opacity .4s;}
+#dots.on{opacity:1;}
+.rd{width:8px;height:8px;border-radius:50%;background:rgba(15,74,66,.9);transition:all .4s;}
+.rd.done{background:var(--tb);}
+.rd.cur{background:var(--tb);box-shadow:0 0 10px var(--tb);}
+
+/* 底部按鈕：pointer-events:auto */
+#btns{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:0 20px max(env(safe-area-inset-bottom,0px),28px);
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  pointer-events:auto;
+}
+.btn-row{display:flex;gap:10px;align-items:center;}
+.vbtn{
+  display:flex;align-items:center;gap:6px;padding:0 14px;height:44px;
+  border-radius:22px;border:1.5px solid rgba(15,74,66,.9);
+  background:rgba(7,31,28,.85);cursor:pointer;transition:all .2s;
+}
+.vbtn.on{border-color:var(--tm);background:rgba(11,46,41,.9);}
+.vbtn-lbl{font-size:12px;color:var(--t3);transition:color .2s;}
+.vbtn.on .vbtn-lbl{color:var(--tp);}
+.abtn{
+  height:44px;padding:0 28px;border-radius:22px;
+  border:1.5px solid var(--tm);background:rgba(13,122,107,.9);
+  color:var(--tp);font-size:15px;font-weight:600;cursor:pointer;
+  box-shadow:0 0 20px rgba(18,160,140,.3);
+}
+.abtn:active{transform:scale(.96);}
+.abtn.sec{background:rgba(7,31,28,.85);border-color:rgba(15,74,66,.9);color:var(--t3);box-shadow:none;}
+.tip{font-size:11px;color:var(--t3);letter-spacing:.04em;text-align:center;text-shadow:0 1px 6px rgba(0,0,0,.9);}
+
+/* 退出鈕：pointer-events:auto */
+#x-btn{
+  position:absolute;top:max(env(safe-area-inset-top,0px),16px);right:16px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(7,31,28,.85);border:1px solid rgba(15,74,66,.8);
+  color:var(--t3);font-size:18px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;pointer-events:auto;
+}
+</style>
+</head>
+<body>
+
+<!-- ── HUD ── -->
+<div id="hud">
+  <div id="top-bar">
+    <span id="top-title">ADHD 同調呼吸</span>
+    <span id="top-status">將手機對準桌面掃描…</span>
+  </div>
+
+  <div id="vbar">
+    <div class="vw"><span></span><span></span><span></span></div>
+    <span id="vt"></span>
+  </div>
+
+  <div id="scan">
+    <div class="s-ring"></div>
+    <div id="scan-txt">偵測到平面後點擊放置</div>
+  </div>
+
+  <div id="breath">
+    <div id="b-phase">—</div>
+    <div id="b-sub"></div>
+  </div>
+
+  <div id="dots"></div>
+
+  <div id="btns">
+    <div class="btn-row">
+      <button class="vbtn on" id="vbtn" onclick="toggleVoice()">
+        <span id="vi" style="font-size:15px">🔊</span>
+        <span class="vbtn-lbl" id="vl">語音開</span>
+      </button>
+      <button class="abtn" id="mbtn" onclick="mainAction()" style="display:none">開始呼吸</button>
+      <button class="abtn sec" id="rbtn" onclick="resetBall()" style="display:none">重新放置</button>
+    </div>
+    <div class="tip">同調呼吸 — 吸氣 5 秒 · 吐氣 6 秒，共 5 輪</div>
+  </div>
+
+  <button id="x-btn" onclick="window.location.reload()">✕</button>
+</div>
+
+<!-- ── A-Frame 場景 ── -->
+<a-scene
+  breath-ball-scene
+  xrextras-loading
+  xrextras-runtime-error
+  renderer="colorManagement:true"
+  xrweb="allowedDevices:any;">
+
+  <a-camera id="camera"
+    position="0 8 8"
+    raycaster="objects:.cantap"
+    cursor="fuse:false;rayOrigin:mouse;">
+  </a-camera>
+
+  <a-entity light="type:directional;intensity:1.0;castShadow:true;" position="2 6 3"></a-entity>
+  <a-light type="ambient" intensity="0.7"></a-light>
+  <a-light type="hemisphere" color="#88FFEE" groundColor="#0A3030" intensity="0.4"></a-light>
+
+  <!-- 隱形地面：接收 raycaster click，取得 3D 落點 -->
+  <a-box id="ground" class="cantap"
+    scale="1000 0.01 1000"
+    position="0 -0.005 0"
+    material="shader:flat;color:#000000;transparent:true;opacity:0.0">
+  </a-box>
+
+  <!-- 呼吸球：初始隱藏 -->
+  <a-entity id="ball-root" visible="false" position="0 0 0">
+
+    <!-- 外球 -->
+    <a-entity id="ball-outer"
+      geometry="primitive:sphere;radius:1.5;segmentsWidth:48;segmentsHeight:48"
+      material="color:#12A08C;emissive:#0A4A3C;emissiveIntensity:0.4;
+                metalness:0.12;roughness:0.14;opacity:0.92;transparent:true;"
+      shadow="cast:true;receive:false">
+    </a-entity>
+
+    <!-- 內核發光 -->
+    <a-entity id="ball-core"
+      geometry="primitive:sphere;radius:0.82;segmentsWidth:32;segmentsHeight:32"
+      material="color:#5DE5CE;emissive:#17C9AF;emissiveIntensity:1.1;
+                opacity:0.50;transparent:true;roughness:0;metalness:0;">
+    </a-entity>
+
+    <!-- 高光（縮在外球內，scale 壓扁成橢圓不凸出）-->
+    <a-entity id="ball-spec"
+      geometry="primitive:sphere;radius:0.43;segmentsWidth:12;segmentsHeight:12"
+      material="color:#CCF5EE;opacity:0.50;transparent:true;"
+      scale="1.1 0.55 0.45"
+      position="-0.43 0.73 0.95">
+    </a-entity>
+
+    <!-- 光暈外殼 -->
+    <a-entity id="ball-glow"
+      geometry="primitive:sphere;radius:1.65;segmentsWidth:16;segmentsHeight:16"
+      material="color:#17C9AF;opacity:0.055;transparent:true;side:back;">
+    </a-entity>
+
+    <!-- 陰影環 -->
+    <a-entity id="ball-shadow"
+      geometry="primitive:circle;radius:1.3;segments:32"
+      material="color:#000000;opacity:0.15;transparent:true;"
+      rotation="-90 0 0"
+      position="0 -1.51 0">
+    </a-entity>
+
+  </a-entity>
+
+</a-scene>
+
+<script>
+/* ══════════════════════════════════════════
+   AR 呼吸球 — 完整乾淨版
+   8th Wall SLAM + A-Frame tap-place
+   同調呼吸：吸氣5s / 吐氣6s × 5輪
+   語音與球體律動同步觸發
+   ══════════════════════════════════════════ */
+
+/* ── 呼吸常數 ── */
+const PHASES = [{n:'吸氣', t:5}, {n:'吐氣', t:6}];
+const ROUNDS  = 5;
+const VS = {
+  intro:   ['歡迎開始同調呼吸練習。', '跟著球的節奏，吸氣五秒，吐氣六秒。'],
+  ph:      {'吸氣':'吸氣', '吐氣':'吐氣'},
+  mid:     [null, '很好，繼續保持。', '讓呼吸更自然。', '感受氣息流動。', '最後一輪。'],
+  end:     '練習完成，帶著這份平靜繼續你的一天。'
+};
+
+/* ── 全域狀態 ── */
+let placed   = false;
+let running  = false, rdone = 0, pidx = 0, sleft = 0, tk = null;
+let voiceOn  = true,  pvox  = null;
+let ballEntity = null, outerEl = null, coreEl = null;
+let tgtScale = 1, curScale = 0, animRAF = null;
+let breathDuration = 5000;
+
+/* ── DOM shorthand ── */
+const $ = id => document.getElementById(id);
+const status  = $('top-status');
+const scanEl  = $('scan');
+const bphase  = $('b-phase'), bsub = $('b-sub');
+const bdsp    = $('breath'),  dotsEl = $('dots');
+const mbtn    = $('mbtn'),    rbtn = $('rbtn');
+const vbar    = $('vbar'),    vt = $('vt');
+
+/* ──────────────────────────────
+   語音
+────────────────────────────── */
+const synth = window.speechSynthesis;
+
+(function initVoice() {
+  if (!synth) return;
+  function pick() {
+    const vs = synth.getVoices();
+    pvox = vs.find(v => v.lang === 'zh-TW' && v.name.includes('Meijia'))
+        || vs.find(v => v.lang === 'zh-TW' && v.name.includes('Ting'))
+        || vs.find(v => v.lang === 'zh-TW')
+        || vs.find(v => v.lang.startsWith('zh'))
+        || null;
+  }
+  synth.getVoices().length ? pick() : synth.addEventListener('voiceschanged', pick, {once: true});
+})();
+
+let bTimer = null;
+function speak(txt, cb) {
+  if (!voiceOn || !synth || !txt) { if (cb) setTimeout(cb, 0); return; }
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(txt);
+  u.lang = 'zh-TW';
+  if (pvox) u.voice = pvox;
+  u.rate = 0.80; u.volume = 1.0;
+  vt.textContent = txt;
+  vbar.classList.add('on');
+  clearTimeout(bTimer);
+  const done = () => { vbar.classList.remove('on'); if (cb) cb(); };
+  u.onend = done; u.onerror = done;
+  bTimer = setTimeout(() => vbar.classList.remove('on'), txt.length * 200 + 1500);
+  synth.speak(u);
+}
+
+function seq(lines, cb) {
+  if (!lines || !lines.length) { if (cb) cb(); return; }
+  const [h, ...t] = lines;
+  if (!h) { seq(t, cb); return; }
+  speak(h, () => t.length ? setTimeout(() => seq(t, cb), 350) : cb && cb());
+}
+
+function toggleVoice() {
+  voiceOn = !voiceOn;
+  $('vbtn').classList.toggle('on', voiceOn);
+  $('vi').textContent  = voiceOn ? '🔊' : '🔇';
+  $('vl').textContent  = voiceOn ? '語音開' : '語音關';
+  if (!voiceOn) { synth && synth.cancel(); vbar.classList.remove('on'); }
+}
+
+/* ──────────────────────────────
+   A-Frame Component（tap-place 核心）
+────────────────────────────── */
+AFRAME.registerComponent('breath-ball-scene', {
+  init() {
+    this.el.addEventListener('loaded', () => {
+
+      /* 取得球體 entity 引用 */
+      ballEntity = $('ball-root');
+      outerEl    = $('ball-outer');
+      coreEl     = $('ball-core');
+
+      /* 地面 click → 放置球 */
+      const ground = $('ground');
+      ground.addEventListener('click', evt => {
+        if (running) return;          /* 呼吸進行中不允許重新放置 */
+        if (placed)  return;          /* 已放置不重複觸發 */
+        const pt = evt.detail && evt.detail.intersection && evt.detail.intersection.point;
+        if (!pt) return;              /* 沒有交叉點時忽略 */
+        placeBall(pt);
+      });
+
+      status.textContent = '偵測到平面後點擊放置';
+    });
+  }
+});
+
+/* ──────────────────────────────
+   球體放置 / 重置
+────────────────────────────── */
+function placeBall(pt) {
+  if (!ballEntity) return;
+  ballEntity.setAttribute('position', {x: pt.x, y: pt.y + 1.5, z: pt.z});
+  ballEntity.setAttribute('visible', true);
+  ballEntity.setAttribute('scale', '0 0 0');
+  placed     = true;
+  curScale   = 0;
+  tgtScale   = 1;
+  animateBall();                      /* 啟動動畫迴圈 */
+
+  scanEl.classList.add('hide');
+  mbtn.style.display = rbtn.style.display = 'block';
+  status.textContent = '點擊「開始呼吸」';
+  buildDots();
+}
+
+function resetBall() {
+  if (running) stopBreath();
+  placed = false;
+  cancelAnimationFrame(animRAF);
+  if (ballEntity) ballEntity.setAttribute('visible', false);
+  mbtn.style.display = rbtn.style.display = 'none';
+  bdsp.classList.remove('on');
+  dotsEl.classList.remove('on');
+  scanEl.classList.remove('hide');
+  status.textContent  = '將手機對準桌面掃描…';
+  bphase.textContent  = '—';
+  bsub.textContent    = '';
+  tgtScale = 1; curScale = 0;
+}
+
+/* ──────────────────────────────
+   球體動畫迴圈（rAF）
+   直接操作 object3D.scale 避免 setAttribute 解析延遲
+────────────────────────────── */
+function animateBall() {
+  cancelAnimationFrame(animRAF);
+
+  function tick() {
+    /* 縮放插值 */
+    const spd = running ? 0.04 : 0.12;
+    curScale += (tgtScale - curScale) * spd;
+    if (Math.abs(curScale - tgtScale) < 0.002) curScale = tgtScale;
+
+    /* 直接設定 Three.js object3D scale（最可靠的方式）*/
+    if (ballEntity && ballEntity.object3D) {
+      ballEntity.object3D.scale.setScalar(curScale);
+    }
+
+    /* 核心脈動：頻率隨呼吸相位不同 */
+    if (coreEl && coreEl.object3D) {
+      const freq  = running ? (tgtScale > 1 ? 2.0 : 0.6) : 1.0;
+      const pulse = 0.6 + 0.55 * Math.sin(Date.now() * 0.001 * freq);
+      if (coreEl.components && coreEl.components.material) {
+        coreEl.components.material.material.emissiveIntensity = pulse;
+      }
+    }
+
+    /* 外球自轉：吸氣順時針、吐氣逆時針 */
+    if (outerEl && outerEl.object3D) {
+      const rotSpd = running ? (tgtScale > 1 ? 0.5 : -0.2) : 0.3;
+      outerEl.object3D.rotation.y += THREE.MathUtils.degToRad(rotSpd);
+    }
+
+    animRAF = requestAnimationFrame(tick);
+  }
+
+  tick();
+}
+
+/* ──────────────────────────────
+   呼吸邏輯
+────────────────────────────── */
+function buildDots() {
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < ROUNDS; i++) {
+    const d = document.createElement('div');
+    d.className = 'rd'; d.id = 'rd' + i;
+    dotsEl.appendChild(d);
+  }
+}
+
+function updDots() {
+  for (let i = 0; i < ROUNDS; i++) {
+    const d = $('rd' + i); if (!d) continue;
+    d.className = 'rd' + (i < rdone ? ' done' : i === rdone ? ' cur' : '');
+  }
+}
+
+function mainAction() { running ? stopBreath() : startBreath(); }
+
+function startBreath() {
+  running = true; rdone = 0; pidx = 0;
+  mbtn.textContent = '停止';
+  rbtn.style.display = 'none';
+  bdsp.classList.add('on');
+  dotsEl.classList.add('on');
+  updDots();
+  seq(VS.intro, () => { if (running) nxt(); });
+}
+
+function stopBreath() {
+  running = false;
+  synth && synth.cancel();
+  vbar.classList.remove('on');
+  clearInterval(tk);
+  mbtn.textContent   = '開始呼吸';
+  rbtn.style.display = 'block';
+  bphase.textContent = '已暫停';
+  bsub.textContent   = '按開始繼續';
+  status.textContent = '已暫停';
+  tgtScale = 1;
+}
+
+function nxt() {
+  if (!running) return;
+  if (pidx >= PHASES.length) {
+    pidx = 0; rdone++; updDots();
+    if (rdone >= ROUNDS) { doneFn(); return; }
+    const m = VS.mid[rdone];
+    if (m && voiceOn) { speak(m, () => { if (running) phFn(); }); return; }
+  }
+  phFn();
+}
+
+function phFn() {
+  if (!running) return;
+  const p = PHASES[pidx];
+  sleft = p.t;
+  breathDuration = p.t * 1000;
+
+  bphase.textContent = p.n;
+  bsub.textContent   = p.n === '吸氣' ? '用鼻子緩緩吸入' : '用嘴慢慢吐出';
+
+  /* 球體縮放與語音同時觸發：吸氣脹大到 2 倍，吐氣縮到 0.5 倍 */
+  tgtScale = p.n === '吸氣' ? 2.0 : 0.5;
+
+  /* 外球顏色切換 */
+  if (outerEl) {
+    const inh = p.n === '吸氣';
+    outerEl.setAttribute('material', {
+      color:             inh ? '#17C9AF' : '#0D7A6B',
+      emissive:          inh ? '#0D7A6B' : '#042820',
+      emissiveIntensity: inh ? 0.55      : 0.22
+    });
+  }
+
+  /* 語音同步 */
+  const w = VS.ph[p.n]; if (w) speak(w);
+
+  /* 計時器：到時間換相位 */
+  clearInterval(tk);
+  tk = setInterval(() => {
+    sleft--;
+    if (sleft <= 0) {
+      clearInterval(tk);
+      pidx++;
+      setTimeout(() => { if (running) nxt(); }, 100);
+    }
+  }, 1000);
+}
+
+function doneFn() {
+  running = false;
+  clearInterval(tk);
+  mbtn.textContent   = '再來一次';
+  rbtn.style.display = 'block';
+  bphase.textContent = '完成';
+  bsub.textContent   = '很棒，保持這份平靜';
+  status.textContent = '練習完成';
+  tgtScale = 1.08;
+  for (let i = 0; i < ROUNDS; i++) {
+    const d = $('rd' + i); if (d) d.className = 'rd done';
+  }
+  if (voiceOn) setTimeout(() => speak(VS.end), 600);
+  setTimeout(() => { if (!running) tgtScale = 1; }, 2200);
+}
+</script>
+</body>
+</html>
