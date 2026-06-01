@@ -1,157 +1,180 @@
 const state = {
-  emotion: "",
-  breathingDone: false,
-  groundingDone: false,
-  intensity: 3,
+  homeEmotion: "",
+  postBreathingEmotion: "",
+  trigger: "",
+  body: "",
+  scale: "",
   action: "",
-  note: "",
+  feedback: "",
 };
 
-const screens = Array.from(document.querySelectorAll("[data-screen]"));
-const stepIndicators = Array.from(document.querySelectorAll("[data-step-indicator]"));
-const emotionCards = Array.from(document.querySelectorAll(".emotion-card"));
-const actionChips = Array.from(document.querySelectorAll(".choice-chip"));
+const screenOrder = [
+  "home",
+  "breathing",
+  "emotion",
+  "grounding",
+  "chat1",
+  "chat2",
+  "scale",
+  "action",
+  "feedback",
+  "complete",
+];
 
-const screenStepMap = {
-  checkin: "checkin",
-  breathing: "breathing",
-  grounding: "grounding",
-  reflect: "reflect",
-  complete: "complete",
+const themeMap = {
+  home: "neutral",
+  breathing: "neutral",
+  emotion: "neutral",
+  grounding: "neutral",
+  chat1: "neutral",
+  chat2: "neutral",
+  scale: "neutral",
+  action: "green",
+  feedback: "green",
+  complete: "green",
 };
 
-const labels = {
-  angry: "生氣",
-  sad: "難過",
-  confused: "混亂",
-  ok: "還可以",
-  rest: "先休息 3 分鐘",
-  talk: "找人聊一下",
-  water: "喝水走動",
-  task: "回到一個小任務",
+const stepMap = {
+  breathing: { index: "01", progress: ["warm"] },
+  emotion: { index: "01", progress: ["warm"] },
+  grounding: { index: "01", progress: ["warm"] },
+  chat1: { index: "02", progress: ["warm", "gold"] },
+  chat2: { index: "02", progress: ["warm", "gold"] },
+  scale: { index: "02", progress: ["warm", "gold"] },
+  action: { index: "03", progress: ["warm", "gold", "green"] },
+  feedback: { index: "03", progress: ["warm", "gold", "green"] },
 };
 
-const startFlowButton = document.getElementById("startFlowButton");
+const appShell = document.querySelector(".app-shell");
+const homeTopNav = document.getElementById("homeTopNav");
+const flowNav = document.getElementById("flowNav");
+const chatHeader = document.getElementById("chatHeader");
+const closeFlowButton = document.getElementById("closeFlowButton");
+const progressPips = document.getElementById("progressPips");
+const stepBadge = document.getElementById("stepBadge");
+const selectedTriggerText = document.getElementById("selectedTriggerText");
+const startBreathingArButton = document.getElementById("startBreathingArButton");
+const startGroundingArButton = document.getElementById("startGroundingArButton");
 const breathingDoneButton = document.getElementById("breathingDoneButton");
 const groundingDoneButton = document.getElementById("groundingDoneButton");
-const completeFlowButton = document.getElementById("completeFlowButton");
-const restartButton = document.getElementById("restartButton");
-const resetFlowButton = document.getElementById("resetFlowButton");
-const intensityRange = document.getElementById("intensityRange");
-const intensityValue = document.getElementById("intensityValue");
-const reflectionNote = document.getElementById("reflectionNote");
+
+function setTheme(screenName) {
+  appShell.dataset.theme = themeMap[screenName] || "neutral";
+}
+
+function setTopChrome(screenName) {
+  const isHome = screenName === "home" || screenName === "complete";
+  const isChat = screenName === "chat1" || screenName === "chat2";
+
+  homeTopNav.hidden = !isHome;
+  flowNav.hidden = isHome;
+  chatHeader.hidden = !isChat;
+
+  if (!isHome) {
+    const step = stepMap[screenName];
+    if (step) {
+      stepBadge.textContent = step.index;
+      stepBadge.style.borderColor = step.progress.at(-1) === "green" ? "#38956d" : step.progress.at(-1) === "gold" ? "#d08a00" : "#d15234";
+      stepBadge.style.color = step.progress.at(-1) === "green" ? "#38956d" : step.progress.at(-1) === "gold" ? "#d08a00" : "#d15234";
+      progressPips.innerHTML = ["warm", "gold", "green"].map((color) => `<span class="pip ${step.progress.includes(color) ? `${color === "warm" ? "active" : color}` : ""}"></span>`).join("");
+    }
+  }
+}
 
 function showScreen(screenName) {
-  screens.forEach((screen) => {
+  document.querySelectorAll(".screen").forEach((screen) => {
     screen.classList.toggle("active", screen.dataset.screen === screenName);
   });
-
-  const activeStep = screenStepMap[screenName];
-  stepIndicators.forEach((step) => {
-    step.classList.toggle("active", step.dataset.stepIndicator === activeStep);
-  });
+  setTheme(screenName);
+  setTopChrome(screenName);
 }
 
-function updateStatePanel() {
-  document.getElementById("stateEmotion").textContent = state.emotion ? labels[state.emotion] : "尚未選擇";
-  document.getElementById("stateBreathing").textContent = state.breathingDone ? "已完成" : "未完成";
-  document.getElementById("stateGrounding").textContent = state.groundingDone ? "已完成" : "未完成";
-  document.getElementById("stateIntensity").textContent = String(state.intensity);
-  document.getElementById("stateAction").textContent = state.action ? labels[state.action] : "尚未選擇";
+function resetSelections(selector, className) {
+  document.querySelectorAll(selector).forEach((node) => node.classList.remove(className));
 }
 
-function updateButtons() {
-  startFlowButton.disabled = !state.emotion;
-  completeFlowButton.disabled = !(state.breathingDone && state.groundingDone && state.action);
-}
-
-function renderSummary() {
-  const summaryCard = document.getElementById("summaryCard");
-  const note = state.note || "這一輪還沒有填寫文字紀錄。";
-  summaryCard.innerHTML = `
-    <strong>情緒：</strong>${state.emotion ? labels[state.emotion] : "未選擇"}<br>
-    <strong>呼吸安定：</strong>${state.breathingDone ? "已完成" : "未完成"}<br>
-    <strong>Grounding：</strong>${state.groundingDone ? "已完成" : "未完成"}<br>
-    <strong>情緒強度：</strong>${state.intensity} / 5<br>
-    <strong>下一步：</strong>${state.action ? labels[state.action] : "未選擇"}<br>
-    <strong>紀錄：</strong>${note}
-  `;
-}
-
-function resetState() {
-  state.emotion = "";
-  state.breathingDone = false;
-  state.groundingDone = false;
-  state.intensity = 3;
-  state.action = "";
-  state.note = "";
-
-  emotionCards.forEach((card) => card.classList.remove("is-selected"));
-  actionChips.forEach((chip) => chip.classList.remove("is-selected"));
-  intensityRange.value = "3";
-  intensityValue.textContent = "3";
-  reflectionNote.value = "";
-
-  updateStatePanel();
-  updateButtons();
-  showScreen("checkin");
-}
-
-emotionCards.forEach((card) => {
-  card.addEventListener("click", () => {
-    emotionCards.forEach((item) => item.classList.remove("is-selected"));
-    card.classList.add("is-selected");
-    state.emotion = card.dataset.emotion;
-    updateStatePanel();
-    updateButtons();
+document.querySelectorAll("[data-emotion]").forEach((button) => {
+  button.addEventListener("click", () => {
+    resetSelections("[data-emotion]", "is-selected");
+    button.classList.add("is-selected");
+    state.homeEmotion = button.dataset.emotion;
+    document.getElementById("startFlowButton").disabled = false;
   });
 });
 
-actionChips.forEach((chip) => {
-  chip.addEventListener("click", () => {
-    actionChips.forEach((item) => item.classList.remove("is-selected"));
-    chip.classList.add("is-selected");
-    state.action = chip.dataset.action;
-    updateStatePanel();
-    updateButtons();
+document.querySelectorAll("[data-emotion-check]").forEach((button) => {
+  button.addEventListener("click", () => {
+    resetSelections("[data-emotion-check]", "is-selected");
+    button.classList.add("is-selected");
+    state.postBreathingEmotion = button.dataset.emotionCheck;
+    document.getElementById("emotionDoneButton").disabled = false;
   });
 });
 
-startFlowButton.addEventListener("click", () => {
-  showScreen("breathing");
+document.querySelectorAll(".chat-option[data-trigger]").forEach((button) => {
+  button.addEventListener("click", () => {
+    resetSelections(".chat-option[data-trigger]", "is-selected");
+    button.classList.add("is-selected");
+    state.trigger = button.dataset.trigger;
+    selectedTriggerText.textContent = state.trigger;
+    setTimeout(() => showScreen("chat2"), 220);
+  });
 });
 
-breathingDoneButton.addEventListener("click", () => {
-  state.breathingDone = true;
-  updateStatePanel();
-  updateButtons();
-  showScreen("grounding");
+document.querySelectorAll(".chat-option[data-body]").forEach((button) => {
+  button.addEventListener("click", () => {
+    resetSelections(".chat-option[data-body]", "is-selected");
+    button.classList.add("is-selected");
+    state.body = button.dataset.body;
+    setTimeout(() => showScreen("scale"), 220);
+  });
 });
 
-groundingDoneButton.addEventListener("click", () => {
-  state.groundingDone = true;
-  updateStatePanel();
-  updateButtons();
-  showScreen("reflect");
+document.querySelectorAll(".scale-card").forEach((button) => {
+  button.addEventListener("click", () => {
+    resetSelections(".scale-card", "is-selected");
+    button.classList.add("is-selected");
+    state.scale = button.dataset.scale;
+    document.getElementById("scaleDoneButton").disabled = false;
+  });
 });
 
-intensityRange.addEventListener("input", (event) => {
-  state.intensity = Number(event.target.value);
-  intensityValue.textContent = String(state.intensity);
-  updateStatePanel();
+document.querySelectorAll(".action-item").forEach((button) => {
+  button.addEventListener("click", () => {
+    resetSelections(".action-item", "is-selected");
+    button.classList.add("is-selected");
+    state.action = button.dataset.action;
+    document.getElementById("actionDoneButton").disabled = false;
+  });
 });
 
-reflectionNote.addEventListener("input", (event) => {
-  state.note = event.target.value.trim();
+document.querySelectorAll(".feedback-card").forEach((button) => {
+  button.addEventListener("click", () => {
+    resetSelections(".feedback-card", "is-selected");
+    button.classList.add("is-selected");
+    state.feedback = button.dataset.feedback;
+    document.getElementById("feedbackDoneButton").disabled = false;
+  });
 });
 
-completeFlowButton.addEventListener("click", () => {
-  renderSummary();
-  showScreen("complete");
+document.getElementById("startFlowButton").addEventListener("click", () => showScreen("breathing"));
+startBreathingArButton.addEventListener("click", () => {
+  window.open("./modules/ar-ball/index.html", "_blank", "noopener,noreferrer");
+  breathingDoneButton.disabled = false;
 });
+breathingDoneButton.addEventListener("click", () => showScreen("emotion"));
+document.getElementById("emotionDoneButton").addEventListener("click", () => showScreen("grounding"));
+startGroundingArButton.addEventListener("click", () => {
+  window.open("./modules/ar-grounding/index.html", "_blank", "noopener,noreferrer");
+  groundingDoneButton.disabled = false;
+});
+groundingDoneButton.addEventListener("click", () => showScreen("chat1"));
+document.getElementById("chat1SendButton").addEventListener("click", () => showScreen("chat2"));
+document.getElementById("chat2SendButton").addEventListener("click", () => showScreen("scale"));
+document.getElementById("scaleDoneButton").addEventListener("click", () => showScreen("action"));
+document.getElementById("actionDoneButton").addEventListener("click", () => showScreen("feedback"));
+document.getElementById("feedbackDoneButton").addEventListener("click", () => showScreen("complete"));
+document.getElementById("restartButton").addEventListener("click", () => window.location.reload());
+closeFlowButton.addEventListener("click", () => showScreen("home"));
 
-restartButton.addEventListener("click", resetState);
-resetFlowButton.addEventListener("click", resetState);
-
-updateStatePanel();
-updateButtons();
+showScreen("home");
