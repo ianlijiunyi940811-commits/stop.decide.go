@@ -6,182 +6,367 @@
   <title>SDG 情緒支持 Prototype</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <span class="brand-pill">STOP / DECIDE / GO</span>
-        <h1>SDG 情緒支持 Prototype</h1>
+  <div class="app-shell" data-theme="neutral">
+    <div class="status-bar">
+      <span class="status-time">13:33</span>
+      <div class="status-dots">
+        <span></span><span></span><span></span>
       </div>
-      <button class="ghost-button" id="resetFlowButton" type="button">重新開始</button>
-    </header>
+    </div>
 
-    <main class="layout">
-      <section class="panel panel-main">
-        <div class="stepbar">
-          <div class="step active" data-step-indicator="checkin">1. 情緒確認</div>
-          <div class="step" data-step-indicator="breathing">2. 呼吸安定</div>
-          <div class="step" data-step-indicator="grounding">3. Grounding</div>
-          <div class="step" data-step-indicator="reflect">4. 反思整理</div>
-          <div class="step" data-step-indicator="complete">5. 完成</div>
-        </div>
+    <div class="top-nav" id="homeTopNav">
+      <span class="brand-pill">SDG.</span>
+      <span class="points-text" id="homePoints">12 pt</span>
+    </div>
 
-        <section class="screen active" data-screen="checkin">
-          <div class="eyebrow">Step 1</div>
-          <h2>先確認你現在的感受</h2>
-          <p class="lead">這一層是主流程入口。AR 模組會在下一步啟動，但我們先記住使用者此刻的情緒狀態。</p>
+    <div class="flow-nav" id="flowNav" hidden>
+      <button class="close-button" id="closeFlowButton" type="button" aria-label="返回首頁">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
+      </button>
+      <div class="progress-pips" id="progressPips">
+        <span class="pip active"></span>
+        <span class="pip"></span>
+        <span class="pip"></span>
+      </div>
+      <span class="step-pill" id="stepBadge">01</span>
+    </div>
+
+    <div class="chat-header" id="chatHeader" hidden>
+      <div class="chat-avatar">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="28" fill="#D08A00"></circle>
+          <rect x="18" y="20" width="28" height="20" rx="6" fill="none" stroke="#fff" stroke-width="3"></rect>
+          <circle cx="27" cy="30" r="2.5" fill="#fff"></circle>
+          <circle cx="37" cy="30" r="2.5" fill="#fff"></circle>
+          <path d="M32 14v8M22 16l2 7M42 16l-2 7" stroke="#fff" stroke-width="3" stroke-linecap="round"></path>
+        </svg>
+      </div>
+      <div>
+        <h3>AI 夥伴</h3>
+        <p>在線上，陪你一起</p>
+      </div>
+    </div>
+
+    <main class="screen-wrap">
+      <section class="screen active" data-screen="home">
+        <div class="home-screen">
+          <h1>今天感覺如何？</h1>
+          <p>選一個，我們一起來處理</p>
 
           <div class="emotion-grid">
-            <button class="emotion-card" data-emotion="angry" type="button">
-              <span class="emotion-emoji">😤</span>
-              <strong>生氣</strong>
-              <span>需要先把能量放下來</span>
+            <button class="emotion-card emotion-red" data-emotion="angry" type="button">
+              <div class="face-disc">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="60" fill="currentColor"></circle>
+                  <path d="M35 38l18 8M85 38l-18 8" stroke="#fff" stroke-width="4" stroke-linecap="round"></path>
+                  <circle cx="47" cy="48" r="4.5" fill="#fff"></circle>
+                  <circle cx="73" cy="48" r="4.5" fill="#fff"></circle>
+                  <path d="M35 83c8-7 16-10 25-10s17 3 25 10" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+              <strong>很生氣</strong>
             </button>
-            <button class="emotion-card" data-emotion="sad" type="button">
-              <span class="emotion-emoji">😢</span>
-              <strong>難過</strong>
-              <span>需要被安穩地接住</span>
+            <button class="emotion-card emotion-blue" data-emotion="sad" type="button">
+              <div class="face-disc">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="60" fill="currentColor"></circle>
+                  <circle cx="47" cy="48" r="4.5" fill="#fff"></circle>
+                  <circle cx="73" cy="48" r="4.5" fill="#fff"></circle>
+                  <path d="M35 83c8-7 16-10 25-10s17 3 25 10" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+              <strong>很難過</strong>
             </button>
-            <button class="emotion-card" data-emotion="confused" type="button">
-              <span class="emotion-emoji">😵</span>
-              <strong>混亂</strong>
-              <span>需要先回到當下</span>
+            <button class="emotion-card emotion-gold" data-emotion="confused" type="button">
+              <div class="face-disc">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="60" fill="currentColor"></circle>
+                  <path d="M35 45c4-6 9-6 14 0c5 6 10 6 15 0M70 45c4-6 9-6 14 0c5 6 10 6 15 0" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"></path>
+                  <path d="M37 80h46" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+              <strong>很混亂</strong>
             </button>
-            <button class="emotion-card" data-emotion="ok" type="button">
-              <span class="emotion-emoji">🙂</span>
-              <strong>還可以</strong>
-              <span>想做一次預防性整理</span>
+            <button class="emotion-card emotion-green" data-emotion="ok" type="button">
+              <div class="face-disc">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle cx="60" cy="60" r="60" fill="currentColor"></circle>
+                  <circle cx="47" cy="48" r="4.5" fill="#fff"></circle>
+                  <circle cx="73" cy="48" r="4.5" fill="#fff"></circle>
+                  <path d="M37 82h46" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path>
+                </svg>
+              </div>
+              <strong>還不錯</strong>
             </button>
           </div>
 
-          <div class="cta-row">
-            <button class="primary-button" id="startFlowButton" type="button" disabled>開始進入安定流程</button>
-          </div>
-        </section>
-
-        <section class="screen" data-screen="breathing">
-          <div class="eyebrow">Step 2</div>
-          <h2>先進行 AR 呼吸安定</h2>
-          <p class="lead">這一步會帶你進入 AR-ball 模組。建議在手機或可用相機的裝置上開啟，完成後再回到主流程。</p>
-
-          <div class="module-card">
-            <div>
-              <h3>Breathing Module</h3>
-              <p>8th Wall / A-Frame AR 呼吸球，含放置球體、視覺呼吸節奏與語音引導。</p>
-            </div>
-            <div class="module-actions">
-              <a class="primary-button inline-button" href="./modules/ar-ball/index.html" target="_blank" rel="noreferrer">開啟 AR-ball</a>
-              <button class="secondary-button inline-button" id="breathingDoneButton" type="button">我已完成這一步</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="screen" data-screen="grounding">
-          <div class="eyebrow">Step 3</div>
-          <h2>接著進入 Grounding 模組</h2>
-          <p class="lead">這一步會開啟本專案內的 grounding 模組。部署到 Vercel 後，它會直接呼叫同一個專案裡的 API。</p>
-
-          <div class="module-card">
-            <div>
-              <h3>Grounding Module</h3>
-              <p>相機觀察、聲音辨識與觸感引導，並透過 Gemini 做視覺物件偵測。</p>
-            </div>
-            <div class="module-actions">
-              <a class="primary-button inline-button" href="./modules/ar-grounding/index.html" target="_blank" rel="noreferrer">開啟 ar-grounding</a>
-              <button class="secondary-button inline-button" id="groundingDoneButton" type="button">我已完成這一步</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="screen" data-screen="reflect">
-          <div class="eyebrow">Step 4</div>
-          <h2>整理一下現在的狀態</h2>
-          <p class="lead">呼吸與 grounding 後，讓使用者快速標記感受、選一個下一步行動，這一層先用 shell 版本接起來。</p>
-
-          <div class="field-stack">
-            <label class="field-label" for="intensityRange">現在的情緒強度</label>
-            <input id="intensityRange" class="range-input" type="range" min="1" max="5" value="3">
-            <div class="range-scale">
-              <span>1 安穩</span>
-              <strong id="intensityValue">3</strong>
-              <span>5 很強烈</span>
-            </div>
-          </div>
-
-          <div class="field-stack">
-            <span class="field-label">此刻比較需要哪一種幫助？</span>
-            <div class="choice-list" id="actionChoices">
-              <button class="choice-chip" data-action="rest" type="button">先休息 3 分鐘</button>
-              <button class="choice-chip" data-action="talk" type="button">找人聊一下</button>
-              <button class="choice-chip" data-action="water" type="button">喝水走動</button>
-              <button class="choice-chip" data-action="task" type="button">回到一個小任務</button>
-            </div>
-          </div>
-
-          <div class="field-stack">
-            <label class="field-label" for="reflectionNote">簡短紀錄</label>
-            <textarea id="reflectionNote" class="text-area" placeholder="例如：我剛剛卡住是因為環境太吵，現在比較能專心了。"></textarea>
-          </div>
-
-          <div class="cta-row">
-            <button class="primary-button" id="completeFlowButton" type="button" disabled>完成本次流程</button>
-          </div>
-        </section>
-
-        <section class="screen" data-screen="complete">
-          <div class="eyebrow">Done</div>
-          <h2>這次的流程已經串起來了</h2>
-          <p class="lead">目前這個 shell 版本已經能把主流程與兩個 AR 模組接在一起，適合作為下一輪正式整合的骨架。</p>
-
-          <div class="summary-card" id="summaryCard"></div>
-
-          <div class="cta-row">
-            <button class="primary-button" id="restartButton" type="button">再跑一次</button>
-          </div>
-        </section>
+          <button class="primary-cta dark" id="startFlowButton" type="button" disabled>
+            <span class="play-triangle"></span>
+            <span>開始 Stop・Decide・Go</span>
+          </button>
+          <p class="home-hint">↓ 往下滑查看今日進度與 Food Quest</p>
+        </div>
       </section>
 
-      <aside class="panel panel-side">
-        <div class="side-card">
-          <div class="eyebrow">Flow State</div>
-          <h3>即時狀態</h3>
-          <dl class="state-list">
-            <div>
-              <dt>情緒</dt>
-              <dd id="stateEmotion">尚未選擇</dd>
-            </div>
-            <div>
-              <dt>呼吸模組</dt>
-              <dd id="stateBreathing">未完成</dd>
-            </div>
-            <div>
-              <dt>Grounding 模組</dt>
-              <dd id="stateGrounding">未完成</dd>
-            </div>
-            <div>
-              <dt>強度</dt>
-              <dd id="stateIntensity">3</dd>
-            </div>
-            <div>
-              <dt>下一步</dt>
-              <dd id="stateAction">尚未選擇</dd>
-            </div>
-          </dl>
-        </div>
+      <section class="screen" data-screen="breathing">
+        <div class="two-pane two-pane-warm">
+          <div class="pane-main">
+            <h2 class="title warm">先跟著小球呼吸～緩和下來</h2>
+            <p class="subtitle">跟著球的節奏呼吸，球大吸氣、球小吐氣</p>
 
-        <div class="side-card">
-          <div class="eyebrow">Integration Notes</div>
-          <ul class="note-list">
-            <li>AR-ball 目前以獨立頁面方式掛接，避免和主殼爭奪相機控制權。</li>
-            <li>AR-grounding 現在改為本專案內的模組頁，部署時只要補上 GEMINI_API_KEY 就能直接使用。</li>
-            <li>下一步可以把這個 shell 升級成 React 或 Vite 專案，或再把模組做更細的狀態回傳。</li>
-          </ul>
+            <div class="ar-stage breathing-stage">
+              <span class="mode-badge">AR 模式</span>
+              <div class="breathing-illustration">
+                <div class="ring ring-outer"></div>
+                <div class="ring ring-mid"></div>
+                <div class="ring ring-inner"></div>
+                <div class="breath-ball">
+                  <svg viewBox="0 0 80 80" aria-hidden="true"><path d="M20 34l20 16l20-16" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+              </div>
+              <p class="breathing-text" id="breathText">吸氣 4 秒・吐氣 4 秒</p>
+              <div class="round-dots">
+                <span class="done"></span><span class="done"></span><span></span><span></span><span></span>
+                <strong>2 / 5 回</strong>
+              </div>
+              <button class="secondary-cta" id="startBreathingArButton" type="button">開始 AR 呼吸練習</button>
+            </div>
+
+            <button class="primary-cta warm" id="breathingDoneButton" type="button" disabled>完成了，繼續</button>
+          </div>
+
+          <div class="pane-side">
+            <div class="ai-card outline warm">
+              <label>AI 陪你</label>
+              <h3>沒關係，我在這裡。<br>先跟著球慢慢來，不用急。</h3>
+              <p>你已經做得很好了。</p>
+            </div>
+            <div class="ai-card soft">
+              <label>為什麼要深呼吸？</label>
+              <h3>深呼吸能讓你的身體慢下來，<br>讓大腦更容易想清楚。</h3>
+              <p>不需要努力，只要跟著球就好。</p>
+            </div>
+          </div>
         </div>
-      </aside>
+      </section>
+
+      <section class="screen" data-screen="emotion">
+        <div class="single-step single-step-warm">
+          <h2 class="title warm center">呼吸完之後，你現在感覺是？</h2>
+          <div class="emotion-grid compact">
+            <button class="emotion-card emotion-red" data-emotion-check="angry" type="button"><div class="face-disc"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="60" fill="currentColor"></circle><path d="M35 38l18 8M85 38l-18 8" stroke="#fff" stroke-width="4" stroke-linecap="round"></path><circle cx="47" cy="48" r="4.5" fill="#fff"></circle><circle cx="73" cy="48" r="4.5" fill="#fff"></circle><path d="M35 83c8-7 16-10 25-10s17 3 25 10" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path></svg></div><strong>很生氣</strong></button>
+            <button class="emotion-card emotion-blue" data-emotion-check="sad" type="button"><div class="face-disc"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="60" fill="currentColor"></circle><circle cx="47" cy="48" r="4.5" fill="#fff"></circle><circle cx="73" cy="48" r="4.5" fill="#fff"></circle><path d="M35 83c8-7 16-10 25-10s17 3 25 10" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path></svg></div><strong>很難過</strong></button>
+            <button class="emotion-card emotion-gold" data-emotion-check="confused" type="button"><div class="face-disc"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="60" fill="currentColor"></circle><path d="M35 45c4-6 9-6 14 0c5 6 10 6 15 0M70 45c4-6 9-6 14 0c5 6 10 6 15 0" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"></path><path d="M37 80h46" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path></svg></div><strong>很混亂</strong></button>
+            <button class="emotion-card emotion-green" data-emotion-check="ok" type="button"><div class="face-disc"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="60" fill="currentColor"></circle><circle cx="47" cy="48" r="4.5" fill="#fff"></circle><circle cx="73" cy="48" r="4.5" fill="#fff"></circle><path d="M37 82h46" stroke="#fff" stroke-width="4.5" stroke-linecap="round"></path></svg></div><strong>還不錯</strong></button>
+          </div>
+          <button class="primary-cta warm" id="emotionDoneButton" type="button" disabled>選好了，繼續</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="grounding">
+        <div class="two-pane two-pane-warm">
+          <div class="pane-main">
+            <h2 class="title warm">AR 接地練習</h2>
+            <p class="subtitle">用眼睛掃描你周圍的環境，打開相機</p>
+            <div class="ar-stage grounding-stage">
+              <span class="mode-badge">AR 掃描模式</span>
+              <div class="scanner-corners">
+                <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+              </div>
+              <div class="object-grid">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <div class="scanner-target"></div>
+              <h3>用眼睛找到 5 樣東西</h3>
+              <p>在 AR 中點選你看到的物件</p>
+              <button class="secondary-cta" id="startGroundingArButton" type="button">開始 AR 接地練習</button>
+            </div>
+            <button class="primary-cta warm" id="groundingDoneButton" type="button" disabled>完成了，繼續</button>
+          </div>
+          <div class="pane-side checklist-pane">
+            <h3>5・4・3・2・1 接地法</h3>
+            <div class="check-item active">
+              <span class="big-num">3</span>
+              <div>
+                <strong>用眼睛找 5 樣東西</strong>
+                <p>仔細看看你周圍有什麼</p>
+              </div>
+              <em>● 現在進行</em>
+            </div>
+            <div class="check-item">
+              <span class="big-num">2</span>
+              <div>
+                <strong>聽 4 種聲音</strong>
+                <p>仔細聽聽周圍有什麼聲音</p>
+              </div>
+            </div>
+            <div class="check-item">
+              <span class="big-num">1</span>
+              <div>
+                <strong>碰 3 樣東西</strong>
+                <p>感受它們的材質與溫度</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="chat1">
+        <div class="chat-screen">
+          <div class="chat-stream">
+            <div class="chat-bubble ai large">嗨！你剛才做完呼吸練習了，做得很好。<br>我想多了解一下你現在的狀況，可以嗎？<span>這些都只有你和我看到</span></div>
+            <div class="chat-bubble ai">剛才是什麼讓你感覺不舒服？<span>你可以選一個，或是打字告訴我</span></div>
+            <div class="option-grid">
+              <button class="chat-option" data-trigger="有人說了讓我很生氣的話" type="button"><span class="radio"></span>有人說了讓我很生氣的話</button>
+              <button class="chat-option" data-trigger="我覺得被誤會了" type="button"><span class="radio"></span>我覺得被誤會了</button>
+              <button class="chat-option" data-trigger="功課太難，我做不到" type="button"><span class="radio"></span>功課太難，我做不到</button>
+              <button class="chat-option" data-trigger="跟朋友發生衝突" type="button"><span class="radio"></span>跟朋友發生衝突</button>
+              <button class="chat-option" data-trigger="老師說了讓我難受的話" type="button"><span class="radio"></span>老師說了讓我難受的話</button>
+              <button class="chat-option" data-trigger="其他原因（說說看）" type="button"><span class="radio"></span>其他原因（說說看）</button>
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <button class="mic-button" type="button" aria-label="語音輸入">
+              <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 1 1-10 0M12 17v4M9 21h6"/></svg>
+            </button>
+            <input class="chat-input" placeholder="或是打字告訴我..." type="text">
+            <button class="send-button" id="chat1SendButton" type="button">
+              <svg viewBox="0 0 24 24"><path d="M4 12h14M12 4l8 8-8 8"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="chat2">
+        <div class="chat-screen">
+          <div class="chat-stream">
+            <div class="chat-bubble ai faded">剛才是什麼讓你感覺不舒服？<span>你可以選一個，或是打字告訴我</span></div>
+            <div class="chat-bubble user" id="selectedTriggerText">有人說了讓我很生氣的話</div>
+            <div class="chat-bubble ai large">謝謝你告訴我，這需要很大的勇氣。<br>你的身體現在哪裡感覺最不舒服？<span>選一個最接近的</span></div>
+            <div class="option-grid">
+              <button class="chat-option body-option" data-body="頭很痛、腦袋很脹" type="button"><span class="radio"></span>頭很痛、腦袋很脹</button>
+              <button class="chat-option body-option" data-body="心跳很快、胸口很悶" type="button"><span class="radio"></span>心跳很快、胸口很悶</button>
+              <button class="chat-option body-option" data-body="手很緊、想打東西" type="button"><span class="radio"></span>手很緊、想打東西</button>
+              <button class="chat-option body-option" data-body="臉很熱、全身發抖" type="button"><span class="radio"></span>臉很熱、全身發抖</button>
+              <button class="chat-option body-option" data-body="整個人覺得很空白" type="button"><span class="radio"></span>整個人覺得很空白</button>
+              <button class="chat-option body-option" data-body="其他感受（說說看）" type="button"><span class="radio"></span>其他感受（說說看）</button>
+            </div>
+          </div>
+          <div class="chat-input-row">
+            <button class="mic-button" type="button" aria-label="語音輸入">
+              <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 1 1-10 0M12 17v4M9 21h6"/></svg>
+            </button>
+            <input class="chat-input" placeholder="或是打字告訴我..." type="text">
+            <button class="send-button" id="chat2SendButton" type="button">
+              <svg viewBox="0 0 24 24"><path d="M4 12h14M12 4l8 8-8 8"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="scale">
+        <div class="single-step single-step-gold">
+          <h2 class="title gold center">現在的感覺有幾分？</h2>
+          <div class="scale-grid">
+            <button class="scale-card" data-scale="1" type="button"><div class="scale-face smile"></div><strong>1</strong><span>很平靜</span></button>
+            <button class="scale-card" data-scale="2" type="button"><div class="scale-face smile"></div><strong>2</strong></button>
+            <button class="scale-card" data-scale="3" type="button"><div class="scale-face neutral"></div><strong>3</strong></button>
+            <button class="scale-card" data-scale="4" type="button"><div class="scale-face confused"></div><strong>4</strong></button>
+            <button class="scale-card" data-scale="5" type="button"><div class="scale-face angry"></div><strong>5</strong><span>超爆炸</span></button>
+          </div>
+          <div class="ai-note">
+            <label>AI 說</label>
+            <p>謝謝你告訴我，我們一起想想下一步要怎麼做。</p>
+          </div>
+          <button class="primary-cta gold" id="scaleDoneButton" type="button" disabled>決定了，繼續</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="action">
+        <div class="single-step single-step-green">
+          <h2 class="title green center">你想先做哪一件事？</h2>
+          <div class="action-list">
+            <button class="action-item" data-action="去喝點水，安靜一下" type="button"><span class="radio-fill"></span>去喝點水，安靜一下</button>
+            <button class="action-item" data-action="去找老師說說話" type="button"><span class="radio-fill"></span>去找老師說說話</button>
+            <button class="action-item" data-action="出去走走，動一動" type="button"><span class="radio-fill"></span>出去走走，動一動</button>
+            <button class="action-item" data-action="聽一首喜歡的歌" type="button"><span class="radio-fill"></span>聽一首喜歡的歌</button>
+            <button class="action-item" data-action="畫畫或塗鴉一下" type="button"><span class="radio-fill"></span>畫畫或塗鴉一下</button>
+          </div>
+          <button class="primary-cta green" id="actionDoneButton" type="button" disabled>就這個！開始行動</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="feedback">
+        <div class="single-step single-step-green">
+          <h2 class="title green center">行動完成！<br>現在感覺？</h2>
+          <div class="feedback-grid">
+            <button class="feedback-card" data-feedback="平靜" type="button"><div class="feedback-face smile"></div></button>
+            <button class="feedback-card" data-feedback="還可以" type="button"><div class="feedback-face smile soft"></div></button>
+            <button class="feedback-card" data-feedback="還是很煩" type="button"><div class="feedback-face angry"></div></button>
+          </div>
+          <div class="ai-note success">
+            <label>AI 說</label>
+            <p>你今天做得很棒！能停下來想一想，就已經很勇敢了。</p>
+          </div>
+          <button class="primary-cta green" id="feedbackDoneButton" type="button" disabled>確認完成</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="complete">
+        <div class="complete-screen">
+          <div class="complete-check">
+            <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="60" fill="#38956D"></circle><path d="M34 62l18 20l35-38" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+          <h2 class="title green center">完成了！</h2>
+          <p class="subtitle center">你今天做到了一件很重要的事</p>
+
+          <div class="points-card">
+            <strong>+5</strong>
+            <div>
+              <h3>冷靜點數到手！</h3>
+              <p>現在共 17 點，再 13 點換餐廳優惠</p>
+            </div>
+            <span class="star-mark">★</span>
+          </div>
+
+          <div class="progress-bar">
+            <span style="width:57%"></span>
+          </div>
+          <p class="progress-copy">17 / 30 達成</p>
+
+          <div class="notify-card">老師和爸爸媽媽已收到今天的練習摘要</div>
+
+          <button class="primary-cta dark" id="restartButton" type="button">回到首頁</button>
+        </div>
+      </section>
     </main>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>
+        <span>首頁</span>
+      </button>
+      <button class="nav-item" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 3v18"/></svg>
+        <span>任務</span>
+      </button>
+      <button class="nav-item" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16v11H4zM12 9V5a3 3 0 0 1 6 0v4M12 9V5a3 3 0 0 0-6 0v4"/></svg>
+        <span>點數</span>
+      </button>
+      <button class="nav-item" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 16h13l2-5H7zM7 16l-1-7h15"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>
+        <span>餐廳</span>
+      </button>
+      <button class="nav-item" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.8-4 5-6 8-6s6.2 2 8 6"/></svg>
+        <span>我的</span>
+      </button>
+    </nav>
   </div>
 
   <script src="./app.js"></script>
