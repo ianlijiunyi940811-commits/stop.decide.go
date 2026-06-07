@@ -387,7 +387,13 @@ async function getAiGuidance(step, input) {
     }
 
     const data = await response.json();
-    if (data?.result?.acknowledgement && data?.result?.supportiveLine && data?.result?.transition) {
+    if (
+      data &&
+      data.result &&
+      data.result.acknowledgement &&
+      data.result.supportiveLine &&
+      data.result.transition
+    ) {
       return data.result;
     }
   } catch (error) {
