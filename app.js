@@ -8,6 +8,56 @@ var state = {
   feedback: ""
 };
 
+var researchSessionId = getOrCreateSessionId();
+
+function getOrCreateSessionId() {
+  var key = "sdg_research_session_id";
+  var existing = "";
+
+  try {
+    existing = window.localStorage.getItem(key) || "";
+  } catch (error) {
+    existing = "";
+  }
+
+  if (existing) return existing;
+
+  var id = "sdg_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+
+  try {
+    window.localStorage.setItem(key, id);
+  } catch (error) {
+    // Local storage can be unavailable in strict browser modes.
+  }
+
+  return id;
+}
+
+function sendResearch(action, data) {
+  if (window.location.protocol === "file:" || typeof fetch !== "function") return;
+
+  var payload = Object.assign({ action: action, sessionId: researchSessionId }, data || {});
+
+  fetch("/api/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    keepalive: true
+  }).catch(function () {});
+}
+
+function trackEvent(eventType, step, value, payload) {
+  sendResearch("event", {
+    eventType: eventType,
+    step: step || "",
+    value: value || "",
+    payload: Object.assign({
+      homeEmotion: state.homeEmotion,
+      postBreathingEmotion: state.postBreathingEmotion
+    }, payload || {})
+  });
+}
+
 var themeMap = {
   home: "neutral",
   breathing: "neutral",
@@ -403,7 +453,14 @@ function submitDecideStep(step, input, source) {
     state.trigger = value;
     setText("selectedTriggerText", value);
     renderThinking("triggerResponseArea");
+    trackEvent("decide_answered", "trigger", value, { source: source });
     getAiGuidance("trigger", value).then(function (reply) {
+      trackEvent("ai_guidance", "trigger", reply.riskLevel || "low", {
+        acknowledgement: reply.acknowledgement,
+        supportiveLine: reply.supportiveLine,
+        transition: reply.transition,
+        source: reply.source || "fallback"
+      });
       renderConversation("triggerResponseArea", value, reply);
       setDisabled("chat1ContinueButton", false);
       setHtml("triggerLeadMessage", '謝謝你願意說出來。先把事情放在這裡，我們一步一步來。<span>AI 會依照你剛剛的回答，陪你走到下一步。</span>');
@@ -417,7 +474,14 @@ function submitDecideStep(step, input, source) {
   if (step === "body") {
     state.body = value;
     renderThinking("bodyResponseArea");
+    trackEvent("decide_answered", "body", value, { source: source });
     getAiGuidance("body", value).then(function (reply) {
+      trackEvent("ai_guidance", "body", reply.riskLevel || "low", {
+        acknowledgement: reply.acknowledgement,
+        supportiveLine: reply.supportiveLine,
+        transition: reply.transition,
+        source: reply.source || "fallback"
+      });
       renderConversation("bodyResponseArea", value, reply);
       setDisabled("chat2ContinueButton", false);
       setText("bodyLeadMessage", "謝謝你把身體的感覺說出來，AI 會陪你把它整理成下一步。");
@@ -435,6 +499,7 @@ function bindHome() {
       card.classList.add("is-selected");
       state.homeEmotion = card.dataset.emotion || "";
       setDisabled("startFlowButton", false);
+      trackEvent("emotion_selected", "home", state.homeEmotion);
     });
   });
 
@@ -453,6 +518,7 @@ function bindEmotionCheck() {
       card.classList.add("is-selected");
       state.postBreathingEmotion = card.dataset.emotionCheck || "";
       setDisabled("emotionDoneButton", false);
+      trackEvent("emotion_selected", "post_breathing", state.postBreathingEmotion);
     });
   });
 }
@@ -485,7 +551,14 @@ function bindScale() {
       card.classList.add("is-selected");
       state.scale = card.dataset.scale || "";
       setDisabled("scaleDoneButton", false);
+      trackEvent("decide_answered", "scale", state.scale);
       getAiGuidance("scale", state.scale).then(function (reply) {
+        trackEvent("ai_guidance", "scale", reply.riskLevel || "low", {
+          acknowledgement: reply.acknowledgement,
+          supportiveLine: reply.supportiveLine,
+          transition: reply.transition,
+          source: reply.source || "fallback"
+        });
         renderAiNote("scaleAiNote", reply);
       });
     });
@@ -499,7 +572,14 @@ function bindActions() {
       item.classList.add("is-selected");
       state.action = item.dataset.action || "";
       setDisabled("actionDoneButton", false);
+      trackEvent("decide_answered", "action", state.action);
       getAiGuidance("action", state.action).then(function (reply) {
+        trackEvent("ai_guidance", "action", reply.riskLevel || "low", {
+          acknowledgement: reply.acknowledgement,
+          supportiveLine: reply.supportiveLine,
+          transition: reply.transition,
+          source: reply.source || "fallback"
+        });
         renderAiNote("actionAiNote", reply);
       });
     });
@@ -513,7 +593,14 @@ function bindFeedback() {
       card.classList.add("is-selected");
       state.feedback = card.dataset.feedback || "";
       setDisabled("feedbackDoneButton", false);
+      trackEvent("decide_answered", "feedback", state.feedback);
       getAiGuidance("feedback", state.feedback).then(function (reply) {
+        trackEvent("ai_guidance", "feedback", reply.riskLevel || "low", {
+          acknowledgement: reply.acknowledgement,
+          supportiveLine: reply.supportiveLine,
+          transition: reply.transition,
+          source: reply.source || "fallback"
+        });
         renderAiNote("feedbackAiNote", reply);
       });
     });
@@ -530,24 +617,52 @@ function bindStaticFlow() {
     window.open("./modules/ar-ball/index.html", "_blank", "noopener,noreferrer");
     setText("startBreathingArButton", "已開啟 AR，完成後回來");
     setDisabled("breathingDoneButton", false);
+    trackEvent("ar_started", "breathing", "ar-ball");
   });
 
-  bindButton("breathingDoneButton", function () { showScreen("emotion"); });
-  bindButton("emotionDoneButton", function () { showScreen("grounding"); });
+  bindButton("breathingDoneButton", function () {
+    trackEvent("step_completed", "breathing", "done");
+    showScreen("emotion");
+  });
+  bindButton("emotionDoneButton", function () {
+    trackEvent("step_completed", "emotion", state.postBreathingEmotion);
+    showScreen("grounding");
+  });
 
   bindButton("startGroundingArButton", function () {
     window.open("./modules/ar-grounding/index.html", "_blank", "noopener,noreferrer");
     setText("startGroundingArButton", "已開啟 AR，完成後回來");
     setDisabled("groundingDoneButton", false);
+    trackEvent("ar_started", "grounding", "ar-grounding");
   });
 
-  bindButton("groundingDoneButton", function () { showScreen("chat1"); });
+  bindButton("groundingDoneButton", function () {
+    trackEvent("step_completed", "grounding", "done");
+    showScreen("chat1");
+  });
   bindButton("chat1ContinueButton", function () { showScreen("chat2"); });
   bindButton("chat2ContinueButton", function () { showScreen("scale"); });
-  bindButton("scaleDoneButton", function () { showScreen("action"); });
-  bindButton("actionDoneButton", function () { showScreen("feedback"); });
+  bindButton("scaleDoneButton", function () {
+    trackEvent("step_completed", "scale", state.scale);
+    showScreen("action");
+  });
+  bindButton("actionDoneButton", function () {
+    trackEvent("step_completed", "action", state.action);
+    showScreen("feedback");
+  });
   bindButton("feedbackDoneButton", function () {
     setText("completionSummary", "你今天先選了「" + (state.action || "一個小行動") + "」，最後感覺是「" + (state.feedback || "完成練習") + "」。老師和爸媽將收到今天的練習摘要。");
+    sendResearch("complete", {
+      metadata: {
+        homeEmotion: state.homeEmotion,
+        postBreathingEmotion: state.postBreathingEmotion,
+        trigger: state.trigger,
+        body: state.body,
+        scale: state.scale,
+        action: state.action,
+        feedback: state.feedback
+      }
+    });
     showScreen("complete");
   });
   bindButton("restartButton", function () { showScreen("home"); });
@@ -613,6 +728,13 @@ function setupVoiceInput(buttonId, inputId, statusId, idleMessage) {
 }
 
 function init() {
+  sendResearch("start", {
+    participantId: "",
+    metadata: {
+      appVersion: "admin-v1",
+      startedFrom: window.location.pathname || "/"
+    }
+  });
   bindHome();
   bindEmotionCheck();
   bindChoiceList(".chat-option[data-trigger]", "trigger", "trigger", "triggerInput", "triggerVoiceStatus");
