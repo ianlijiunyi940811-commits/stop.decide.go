@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stop Decide Go Research Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <section class="admin-hero">
+      <div>
+        <p>Research Admin</p>
+        <h1>Stop Decide Go 後台</h1>
+        <span>查看匿名使用紀錄、DECIDE 選項、完成率與匯出研究資料。</span>
+      </div>
+      <form class="login-card" id="loginForm">
+        <label for="adminPassword">管理密碼</label>
+        <div>
+          <input id="adminPassword" type="password" autocomplete="current-password" placeholder="輸入 ADMIN_PASSWORD">
+          <button type="submit">登入</button>
+        </div>
+        <small id="loginStatus">密碼只會存在此瀏覽器，不會寫進 GitHub。</small>
+      </form>
+    </section>
+
+    <section class="toolbar" id="toolbar" hidden>
+      <button id="refreshButton" type="button">重新整理</button>
+      <button id="exportButton" type="button">匯出 CSV</button>
+      <button id="logoutButton" type="button">登出</button>
+    </section>
+
+    <section class="stats-grid" id="statsGrid" hidden>
+      <article>
+        <span>總 sessions</span>
+        <strong id="totalSessions">0</strong>
+      </article>
+      <article>
+        <span>完成 sessions</span>
+        <strong id="completedSessions">0</strong>
+      </article>
+      <article>
+        <span>近 7 天</span>
+        <strong id="sessions7d">0</strong>
+      </article>
+      <article>
+        <span>完成率</span>
+        <strong id="completionRate">0%</strong>
+      </article>
+    </section>
+
+    <section class="admin-grid" id="adminContent" hidden>
+      <article class="panel">
+        <h2>最近 sessions</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>時間</th>
+                <th>受試者</th>
+                <th>事件</th>
+                <th>狀態</th>
+              </tr>
+            </thead>
+            <tbody id="recentSessions"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>常見選項</h2>
+        <div id="choiceList" class="choice-list"></div>
+      </article>
+
+      <article class="panel">
+        <h2>事件類型</h2>
+        <div id="eventList" class="choice-list"></div>
+      </article>
+
+      <article class="panel">
+        <h2>Session 細節</h2>
+        <div id="sessionDetail" class="detail-box">點選最近 sessions 中的一筆資料查看事件流。</div>
+      </article>
+    </section>
+  </main>
+
+  <script src="./admin.js"></script>
+</body>
+</html>
