@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -24,7 +24,7 @@
     </div>
 
     <div class="flow-nav" id="flowNav" hidden>
-      <button class="close-button" id="closeFlowButton" type="button" aria-label="返回首頁">
+      <button class="close-button" id="closeFlowButton" type="button" aria-label="回到首頁">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
       </button>
       <div class="progress-pips" id="progressPips">
@@ -108,14 +108,14 @@
             <span class="play-triangle"></span>
             <span>開始 Stop・Decide・Go</span>
           </button>
-          <p class="home-hint">↓ 往下滑查看今日進度與 Food Quest</p>
+          <p class="home-hint">往下滑查看今日進度與 Food Quest</p>
         </div>
       </section>
 
       <section class="screen" data-screen="breathing">
         <div class="two-pane two-pane-warm">
           <div class="pane-main">
-            <h2 class="title warm">先跟著小球呼吸～緩和下來</h2>
+            <h2 class="title warm">先跟著小球呼吸，緩和下來</h2>
             <p class="subtitle">跟著球的節奏呼吸，球大吸氣、球小吐氣</p>
 
             <div class="ar-stage breathing-stage">
@@ -195,7 +195,7 @@
                 <strong>用眼睛找 5 樣東西</strong>
                 <p>仔細看看你周圍有什麼</p>
               </div>
-              <em>● 現在進行</em>
+              <em>現在進行</em>
             </div>
             <div class="check-item">
               <span class="big-num">2</span>
@@ -218,25 +218,30 @@
       <section class="screen" data-screen="chat1">
         <div class="chat-screen">
           <div class="chat-stream">
-            <div class="chat-bubble ai large">嗨！你剛才做完呼吸練習了，做得很好。<br>我想多了解一下你現在的狀況，可以嗎？<span>這些都只有你和我看到</span></div>
-            <div class="chat-bubble ai">剛才是什麼讓你感覺不舒服？<span>你可以選一個，或是打字告訴我</span></div>
-            <div class="option-grid">
+            <div class="chat-bubble ai large" id="triggerLeadMessage">嗨，你剛才做完呼吸練習了，做得很好。<br>我想多了解一下你現在的狀況，可以嗎？<span>這些都只有你和我看到</span></div>
+            <div class="chat-bubble ai" id="triggerPromptMessage">剛才是什麼讓你感覺不舒服？<span>你可以選一個，或是打字告訴我</span></div>
+            <div id="triggerResponseArea"></div>
+            <div class="option-grid" id="triggerOptions">
               <button class="chat-option" data-trigger="有人說了讓我很生氣的話" type="button"><span class="radio"></span>有人說了讓我很生氣的話</button>
               <button class="chat-option" data-trigger="我覺得被誤會了" type="button"><span class="radio"></span>我覺得被誤會了</button>
               <button class="chat-option" data-trigger="功課太難，我做不到" type="button"><span class="radio"></span>功課太難，我做不到</button>
               <button class="chat-option" data-trigger="跟朋友發生衝突" type="button"><span class="radio"></span>跟朋友發生衝突</button>
               <button class="chat-option" data-trigger="老師說了讓我難受的話" type="button"><span class="radio"></span>老師說了讓我難受的話</button>
-              <button class="chat-option" data-trigger="其他原因（說說看）" type="button"><span class="radio"></span>其他原因（說說看）</button>
+              <button class="chat-option" data-trigger="其他原因（我想自己說）" type="button"><span class="radio"></span>其他原因（我想自己說）</button>
             </div>
           </div>
-          <div class="chat-input-row">
-            <button class="mic-button" type="button" aria-label="語音輸入">
-              <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 1 1-10 0M12 17v4M9 21h6"/></svg>
-            </button>
-            <input class="chat-input" placeholder="或是打字告訴我..." type="text">
-            <button class="send-button" id="chat1SendButton" type="button">
-              <svg viewBox="0 0 24 24"><path d="M4 12h14M12 4l8 8-8 8"/></svg>
-            </button>
+          <div class="chat-compose">
+            <div class="chat-input-row">
+              <button class="mic-button" id="triggerMicButton" type="button" aria-label="語音輸入">
+                <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 1 1-10 0M12 17v4M9 21h6"/></svg>
+              </button>
+              <input class="chat-input" id="triggerInput" placeholder="或是打字告訴我..." type="text">
+              <button class="send-button" id="chat1SendButton" type="button" aria-label="送出">
+                <svg viewBox="0 0 24 24"><path d="M4 12h14M12 4l8 8-8 8"/></svg>
+              </button>
+            </div>
+            <p class="chat-helper" id="triggerVoiceStatus">也可以按左邊麥克風說出來。</p>
+            <button class="primary-cta gold step-continue" id="chat1ContinueButton" type="button" disabled>我想好了，下一步</button>
           </div>
         </div>
       </section>
@@ -244,26 +249,31 @@
       <section class="screen" data-screen="chat2">
         <div class="chat-screen">
           <div class="chat-stream">
-            <div class="chat-bubble ai faded">剛才是什麼讓你感覺不舒服？<span>你可以選一個，或是打字告訴我</span></div>
+            <div class="chat-bubble ai large" id="bodyLeadMessage">謝謝你告訴我。你已經把事情說清楚了一點，我們再一起看看身體的感覺。</div>
             <div class="chat-bubble user" id="selectedTriggerText">有人說了讓我很生氣的話</div>
-            <div class="chat-bubble ai large">謝謝你告訴我，這需要很大的勇氣。<br>你的身體現在哪裡感覺最不舒服？<span>選一個最接近的</span></div>
-            <div class="option-grid">
+            <div class="chat-bubble ai" id="bodyPromptMessage">你的身體現在最不舒服的是哪裡？<span>選一個最接近的，或補充你自己的感受</span></div>
+            <div id="bodyResponseArea"></div>
+            <div class="option-grid" id="bodyOptions">
               <button class="chat-option body-option" data-body="頭很痛、腦袋很脹" type="button"><span class="radio"></span>頭很痛、腦袋很脹</button>
               <button class="chat-option body-option" data-body="心跳很快、胸口很悶" type="button"><span class="radio"></span>心跳很快、胸口很悶</button>
               <button class="chat-option body-option" data-body="手很緊、想打東西" type="button"><span class="radio"></span>手很緊、想打東西</button>
               <button class="chat-option body-option" data-body="臉很熱、全身發抖" type="button"><span class="radio"></span>臉很熱、全身發抖</button>
               <button class="chat-option body-option" data-body="整個人覺得很空白" type="button"><span class="radio"></span>整個人覺得很空白</button>
-              <button class="chat-option body-option" data-body="其他感受（說說看）" type="button"><span class="radio"></span>其他感受（說說看）</button>
+              <button class="chat-option body-option" data-body="其他感受（我想自己說）" type="button"><span class="radio"></span>其他感受（我想自己說）</button>
             </div>
           </div>
-          <div class="chat-input-row">
-            <button class="mic-button" type="button" aria-label="語音輸入">
-              <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 1 1-10 0M12 17v4M9 21h6"/></svg>
-            </button>
-            <input class="chat-input" placeholder="或是打字告訴我..." type="text">
-            <button class="send-button" id="chat2SendButton" type="button">
-              <svg viewBox="0 0 24 24"><path d="M4 12h14M12 4l8 8-8 8"/></svg>
-            </button>
+          <div class="chat-compose">
+            <div class="chat-input-row">
+              <button class="mic-button" id="bodyMicButton" type="button" aria-label="語音輸入">
+                <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 1 1-10 0M12 17v4M9 21h6"/></svg>
+              </button>
+              <input class="chat-input" id="bodyInput" placeholder="或是打字告訴我..." type="text">
+              <button class="send-button" id="chat2SendButton" type="button" aria-label="送出">
+                <svg viewBox="0 0 24 24"><path d="M4 12h14M12 4l8 8-8 8"/></svg>
+              </button>
+            </div>
+            <p class="chat-helper" id="bodyVoiceStatus">如果比較想用說的，也可以直接錄音輸入。</p>
+            <button class="primary-cta gold step-continue" id="chat2ContinueButton" type="button" disabled>我說完了，下一步</button>
           </div>
         </div>
       </section>
@@ -278,9 +288,9 @@
             <button class="scale-card" data-scale="4" type="button"><div class="scale-face confused"></div><strong>4</strong></button>
             <button class="scale-card" data-scale="5" type="button"><div class="scale-face angry"></div><strong>5</strong><span>超爆炸</span></button>
           </div>
-          <div class="ai-note">
+          <div class="ai-note" id="scaleAiNote">
             <label>AI 說</label>
-            <p>謝謝你告訴我，我們一起想想下一步要怎麼做。</p>
+            <p>選一個最接近現在的分數就好，不需要想很久。</p>
           </div>
           <button class="primary-cta gold" id="scaleDoneButton" type="button" disabled>決定了，繼續</button>
         </div>
@@ -296,21 +306,25 @@
             <button class="action-item" data-action="聽一首喜歡的歌" type="button"><span class="radio-fill"></span>聽一首喜歡的歌</button>
             <button class="action-item" data-action="畫畫或塗鴉一下" type="button"><span class="radio-fill"></span>畫畫或塗鴉一下</button>
           </div>
-          <button class="primary-cta green" id="actionDoneButton" type="button" disabled>就這個！開始行動</button>
+          <div class="ai-note success" id="actionAiNote">
+            <label>AI 說</label>
+            <p>先挑一件你現在最做得到的小事，我會陪你完成這一步。</p>
+          </div>
+          <button class="primary-cta green" id="actionDoneButton" type="button" disabled>就這個，開始行動</button>
         </div>
       </section>
 
       <section class="screen" data-screen="feedback">
         <div class="single-step single-step-green">
-          <h2 class="title green center">行動完成！<br>現在感覺？</h2>
+          <h2 class="title green center">行動完成！<br>現在感覺呢？</h2>
           <div class="feedback-grid">
-            <button class="feedback-card" data-feedback="平靜" type="button"><div class="feedback-face smile"></div></button>
-            <button class="feedback-card" data-feedback="還可以" type="button"><div class="feedback-face smile soft"></div></button>
+            <button class="feedback-card" data-feedback="好很多了" type="button"><div class="feedback-face smile"></div></button>
+            <button class="feedback-card" data-feedback="平靜一點了" type="button"><div class="feedback-face soft"></div></button>
             <button class="feedback-card" data-feedback="還是很煩" type="button"><div class="feedback-face angry"></div></button>
           </div>
-          <div class="ai-note success">
+          <div class="ai-note success" id="feedbackAiNote">
             <label>AI 說</label>
-            <p>你今天做得很棒！能停下來想一想，就已經很勇敢了。</p>
+            <p>不管你現在是好一些，還是還需要更多時間，我都會先接住你。</p>
           </div>
           <button class="primary-cta green" id="feedbackDoneButton" type="button" disabled>確認完成</button>
         </div>
@@ -338,7 +352,7 @@
           </div>
           <p class="progress-copy">17 / 30 達成</p>
 
-          <div class="notify-card">老師和爸爸媽媽已收到今天的練習摘要</div>
+          <div class="notify-card" id="completionSummary">老師和爸媽將收到今天的練習摘要。</div>
 
           <button class="primary-cta dark" id="restartButton" type="button">回到首頁</button>
         </div>
@@ -346,29 +360,4 @@
     </main>
 
     <nav class="bottom-nav">
-      <button class="nav-item active" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5V21h-6v-6H9v6H3z"/></svg>
-        <span>首頁</span>
-      </button>
-      <button class="nav-item" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 3v18"/></svg>
-        <span>任務</span>
-      </button>
-      <button class="nav-item" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16v11H4zM12 9V5a3 3 0 0 1 6 0v4M12 9V5a3 3 0 0 0-6 0v4"/></svg>
-        <span>點數</span>
-      </button>
-      <button class="nav-item" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 16h13l2-5H7zM7 16l-1-7h15"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>
-        <span>餐廳</span>
-      </button>
-      <button class="nav-item" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.8-4 5-6 8-6s6.2 2 8 6"/></svg>
-        <span>我的</span>
-      </button>
-    </nav>
-  </div>
-
-  <script src="./app.js"></script>
-</body>
-</html>
+      <button class="nav-item active" type="button
