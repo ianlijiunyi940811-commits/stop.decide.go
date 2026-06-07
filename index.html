@@ -218,6 +218,14 @@
       <section class="screen" data-screen="chat1">
         <div class="chat-screen">
           <div class="chat-stream">
+            <div class="decide-companion">
+              <div class="decide-avatar" aria-hidden="true">AI</div>
+              <div>
+                <span>DECIDE 1 / 5</span>
+                <strong>先找出剛剛發生了什麼</strong>
+                <p>你可以直接點選，也可以打字或用語音說給 AI 夥伴聽。</p>
+              </div>
+            </div>
             <div class="chat-bubble ai large" id="triggerLeadMessage">嗨，你剛才做完呼吸練習了，做得很好。<br>我想多了解一下你現在的狀況，可以嗎？<span>這些都只有你和我看到</span></div>
             <div class="chat-bubble ai" id="triggerPromptMessage">剛才是什麼讓你感覺不舒服？<span>你可以選一個，或是打字告訴我</span></div>
             <div id="triggerResponseArea"></div>
@@ -249,6 +257,14 @@
       <section class="screen" data-screen="chat2">
         <div class="chat-screen">
           <div class="chat-stream">
+            <div class="decide-companion">
+              <div class="decide-avatar" aria-hidden="true">AI</div>
+              <div>
+                <span>DECIDE 2 / 5</span>
+                <strong>再看看身體正在告訴你什麼</strong>
+                <p>情緒有時候會先出現在身體裡，我們一起慢慢找。</p>
+              </div>
+            </div>
             <div class="chat-bubble ai large" id="bodyLeadMessage">謝謝你告訴我。你已經把事情說清楚了一點，我們再一起看看身體的感覺。</div>
             <div class="chat-bubble user" id="selectedTriggerText">有人說了讓我很生氣的話</div>
             <div class="chat-bubble ai" id="bodyPromptMessage">你的身體現在最不舒服的是哪裡？<span>選一個最接近的，或補充你自己的感受</span></div>
@@ -280,6 +296,7 @@
 
       <section class="screen" data-screen="scale">
         <div class="single-step single-step-gold">
+          <p class="decide-kicker">DECIDE 3 / 5・AI 會依照你的分數引導下一步</p>
           <h2 class="title gold center">現在的感覺有幾分？</h2>
           <div class="scale-grid">
             <button class="scale-card" data-scale="1" type="button"><div class="scale-face smile"></div><strong>1</strong><span>很平靜</span></button>
@@ -298,6 +315,7 @@
 
       <section class="screen" data-screen="action">
         <div class="single-step single-step-green">
+          <p class="decide-kicker green">DECIDE 4 / 5・選一個現在做得到的小行動</p>
           <h2 class="title green center">你想先做哪一件事？</h2>
           <div class="action-list">
             <button class="action-item" data-action="去喝點水，安靜一下" type="button"><span class="radio-fill"></span>去喝點水，安靜一下</button>
@@ -316,6 +334,7 @@
 
       <section class="screen" data-screen="feedback">
         <div class="single-step single-step-green">
+          <p class="decide-kicker green">DECIDE 5 / 5・完成後回來看看變化</p>
           <h2 class="title green center">行動完成！<br>現在感覺呢？</h2>
           <div class="feedback-grid">
             <button class="feedback-card" data-feedback="好很多了" type="button"><div class="feedback-face smile"></div></button>
