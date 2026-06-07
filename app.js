@@ -34,29 +34,29 @@ var stepMap = {
 
 var fallbackReplies = {
   trigger: {
-    acknowledgement: "OK.",
-    supportiveLine: "I am here with you.",
-    transition: "Next, notice your body."
+    acknowledgement: "謝謝你願意說出來。",
+    supportiveLine: "我們先不用急著解決，先一起把感覺看清楚。",
+    transition: "我想再陪你看看，你的身體哪裡最不舒服？"
   },
   body: {
-    acknowledgement: "Thanks for noticing that.",
-    supportiveLine: "That helps us understand the feeling.",
-    transition: "Choose a number from 1 to 5."
+    acknowledgement: "你有注意到身體的感覺，這很重要。",
+    supportiveLine: "身體也會幫我們知道現在有多不舒服。",
+    transition: "如果現在用 1 到 5 分來看，你覺得大概有幾分？"
   },
   scale: {
-    acknowledgement: "Thanks for choosing a number.",
-    supportiveLine: "One small step is enough.",
-    transition: "Choose one action."
+    acknowledgement: "謝謝你把現在的分數說清楚。",
+    supportiveLine: "不用一次變得很好，我們先做一個小步驟。",
+    transition: "你想先做哪一件事，讓自己舒服一點？"
   },
   action: {
-    acknowledgement: "That is a good small step.",
-    supportiveLine: "You can start there.",
-    transition: "Come back after you finish."
+    acknowledgement: "這是一個可以開始的小行動。",
+    supportiveLine: "先做這一步就很好，不需要一次處理全部。",
+    transition: "做完後再回來告訴我，你現在感覺怎麼樣。"
   },
   feedback: {
-    acknowledgement: "Thanks for coming back.",
-    supportiveLine: "Trying this step matters.",
-    transition: "Let us finish today's practice."
+    acknowledgement: "謝謝你回來告訴我。",
+    supportiveLine: "不管有沒有立刻變好，你剛剛願意試試看已經很棒。",
+    transition: "我們先把今天完成的這一步記下來。"
   }
 };
 
@@ -199,7 +199,7 @@ function getAiGuidance(step, input) {
 function renderAiNote(id, reply) {
   setHtml(
     id,
-    "<label>AI</label><p>" +
+    "<label>AI 說</label><p>" +
       escapeHtml(reply.acknowledgement) + " " +
       escapeHtml(reply.supportiveLine) + " " +
       escapeHtml(reply.transition) +
@@ -227,7 +227,7 @@ function submitDecideStep(step, input, source) {
     getAiGuidance("trigger", value).then(function (reply) {
       renderConversation("triggerResponseArea", value, reply);
       setDisabled("chat1ContinueButton", false);
-      setHtml("triggerLeadMessage", 'Thanks for telling me.<span>You can choose an option or add your own words.</span>');
+      setHtml("triggerLeadMessage", '謝謝你願意說出來。先把事情放在這裡，我們一步一步來。<span>你可以選項，也可以自己補充。</span>');
       if (source !== "choice") resetSelected(".chat-option[data-trigger]");
       var inputNode = byId("triggerInput");
       if (inputNode) inputNode.value = "";
@@ -240,7 +240,7 @@ function submitDecideStep(step, input, source) {
     getAiGuidance("body", value).then(function (reply) {
       renderConversation("bodyResponseArea", value, reply);
       setDisabled("chat2ContinueButton", false);
-      setText("bodyLeadMessage", "Thanks for noticing your body. That helps us choose the next step.");
+      setText("bodyLeadMessage", "謝謝你把身體的感覺說出來，這會幫助我們更照顧你。");
       if (source !== "choice") resetSelected(".chat-option[data-body]");
       var inputNode = byId("bodyInput");
       if (inputNode) inputNode.value = "";
@@ -289,7 +289,7 @@ function bindChoiceList(selector, dataKey, nextStep, inputId, helperId) {
       if (button === options[options.length - 1]) {
         var input = byId(inputId);
         if (input) input.focus();
-        setText(helperId, "You can type here, or use the microphone.");
+        setText(helperId, "你可以直接打字，或按麥克風說給我聽。");
         return;
       }
 
@@ -348,7 +348,7 @@ function bindButton(id, handler) {
 function bindStaticFlow() {
   bindButton("startBreathingArButton", function () {
     window.open("./modules/ar-ball/index.html", "_blank", "noopener,noreferrer");
-    setText("startBreathingArButton", "AR opened. Come back when finished.");
+    setText("startBreathingArButton", "已開啟 AR，完成後回來");
     setDisabled("breathingDoneButton", false);
   });
 
@@ -357,7 +357,7 @@ function bindStaticFlow() {
 
   bindButton("startGroundingArButton", function () {
     window.open("./modules/ar-grounding/index.html", "_blank", "noopener,noreferrer");
-    setText("startGroundingArButton", "AR opened. Come back when finished.");
+    setText("startGroundingArButton", "已開啟 AR，完成後回來");
     setDisabled("groundingDoneButton", false);
   });
 
@@ -367,7 +367,7 @@ function bindStaticFlow() {
   bindButton("scaleDoneButton", function () { showScreen("action"); });
   bindButton("actionDoneButton", function () { showScreen("feedback"); });
   bindButton("feedbackDoneButton", function () {
-    setText("completionSummary", "Practice complete. The summary is ready.");
+    setText("completionSummary", "你今天先選了「" + (state.action || "一個小行動") + "」，最後感覺是「" + (state.feedback || "完成練習") + "」。老師和爸媽將收到今天的練習摘要。");
     showScreen("complete");
   });
   bindButton("restartButton", function () { showScreen("home"); });
@@ -403,7 +403,7 @@ function setupVoiceInput(buttonId, inputId, statusId, idleMessage) {
   if (!button || !input || !status) return;
 
   if (!Recognition) {
-    status.textContent = "Voice input is not supported here. You can type instead.";
+    status.textContent = "目前瀏覽器不支援語音輸入，可以直接打字。";
     button.disabled = true;
     return;
   }
@@ -414,17 +414,17 @@ function setupVoiceInput(buttonId, inputId, statusId, idleMessage) {
   recognition.maxAlternatives = 1;
 
   button.addEventListener("click", function () {
-    status.textContent = "Listening...";
+    status.textContent = "正在聽你說話...";
     recognition.start();
   });
 
   recognition.addEventListener("result", function (event) {
     input.value = event.results[0][0].transcript;
-    status.textContent = "Voice text added. Press send when ready.";
+    status.textContent = "已幫你填入語音內容，按送出就可以了。";
   });
 
   recognition.addEventListener("error", function () {
-    status.textContent = "Voice input did not work. You can type instead.";
+    status.textContent = "剛剛沒有成功收到語音，沒關係，也可以直接打字。";
   });
 
   recognition.addEventListener("end", function () {
@@ -443,8 +443,8 @@ function init() {
   bindStaticFlow();
   bindEnterSubmit("triggerInput", "trigger");
   bindEnterSubmit("bodyInput", "body");
-  setupVoiceInput("triggerMicButton", "triggerInput", "triggerVoiceStatus", "You can also use the microphone.");
-  setupVoiceInput("bodyMicButton", "bodyInput", "bodyVoiceStatus", "You can also use the microphone.");
+  setupVoiceInput("triggerMicButton", "triggerInput", "triggerVoiceStatus", "也可以按左邊麥克風說出來。");
+  setupVoiceInput("bodyMicButton", "bodyInput", "bodyVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。");
   showScreen("home");
 }
 
