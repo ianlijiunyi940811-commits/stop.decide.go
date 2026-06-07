@@ -1,80 +1,106 @@
 # SDG Prototype Shell
 
-這個資料夾已經整理成可上 GitHub、可接 Vercel 的版本。
+這個專案是 `Stop・Decide・Go` 的整合版 prototype，包含：
 
-## 專案內容
+- 主流程 shell
+- `AR-ball` 呼吸模組
+- `AR-grounding` 接地模組
+- `DECIDE` 引導式 AI 對話
+- grounding 影像辨識 API
+
+## 專案結構
 
 - `index.html`
-  - 主流程 shell
+  - 主畫面與流程頁面
 - `app.js`
-  - 畫面切換與狀態管理
+  - 前端流程控制與 DECIDE 互動
 - `styles.css`
-  - 主 shell 樣式
+  - 主介面樣式
 - `api/detect.js`
-  - 給 grounding 模組使用的 serverless API
-- `modules/ar-ball/index.html`
+  - grounding 用的 Gemini 影像辨識 API
+- `api/decide.js`
+  - DECIDE 用的 OpenAI 引導式對話 API
+- `modules/ar-ball/`
   - 呼吸 AR 模組
 - `modules/ar-grounding/`
-  - grounding 模組與其靜態資源
+  - 接地 AR 模組
 - `vercel.json`
-  - Vercel 部署設定
-
-## 目前行為
-
-- 主 shell 處理：
-  - 情緒確認
-  - 模組入口
-  - 反思整理
-  - 完成摘要
-- `AR-ball` 從本地模組頁開啟
-- `AR-grounding` 也從本地模組頁開啟
-- grounding 需要呼叫根目錄的 `/api/detect`
+  - Vercel 設定
 
 ## 本地預覽
 
-如果你想先在本機看：
+如果只是看前端畫面，可以直接用本地靜態伺服器打開。
 
-1. 在這個資料夾開終端
-2. 執行：
+如果要測試正式 AI API：
 
-```powershell
-"C:\Program Files\nodejs\node.exe" "C:\Users\ianli\Documents\Codex\2026-05-25\files-mentioned-by-the-user-sdg\serve.js"
-```
+1. 專案部署到 Vercel
+2. 在 Vercel 設定環境變數
+3. 使用 Vercel 網址打開
 
-3. 打開：
+## Vercel 環境變數
 
-- `http://localhost:8000/`
-
-## 上 GitHub 與接 Vercel
-
-你要上傳的是整個專案，不是只有 README。
-
-### GitHub
-
-```powershell
-git add .
-git commit -m "Initial SDG prototype shell"
-git branch -M main
-git remote add origin https://github.com/你的帳號/你的repo.git
-git push -u origin main
-```
-
-### Vercel
-
-1. Import Git Repository
-2. 選你的 repo
-3. Framework Preset 選 `Other`
-4. Root Directory 保持 repo 根目錄
-5. 加入環境變數：
+至少需要：
 
 ```text
-GEMINI_API_KEY=你的金鑰
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-5-mini
 ```
 
+## DECIDE API
+
+### `POST /api/decide`
+
+用途：
+- 根據目前 DECIDE 的步驟
+- 接收孩子的選項、打字或語音轉文字
+- 產生一段短的、適齡的引導回應
+
+請求格式：
+
+```json
+{
+  "step": "trigger",
+  "selectedEmotion": "angry",
+  "context": {
+    "trigger": "",
+    "body": "",
+    "scale": "",
+    "action": "",
+    "feedback": ""
+  },
+  "input": {
+    "text": "有人說了讓我很生氣的話"
+  }
+}
+```
+
+回應格式：
+
+```json
+{
+  "result": {
+    "acknowledgement": "被這樣說真的很容易一下子火起來。",
+    "supportiveLine": "謝謝你願意告訴我，我有在聽。",
+    "transition": "我想再陪你看看，你的身體哪裡最不舒服？",
+    "riskLevel": "low"
+  },
+  "model": "gpt-5-mini",
+  "usage": {}
+}
+```
+
+## 部署
+
+1. 把整個 repo push 到 GitHub
+2. 在 Vercel 匯入這個 repo
+3. Framework Preset 選 `Other`
+4. Root Directory 選 repo 根目錄
+5. 設定上面的環境變數
 6. Deploy
 
-## 注意事項
+## 注意
 
-- `AR-ball` 使用 8th Wall / A-Frame，如果正式網域有限制，需要再檢查 8th Wall 的網域設定。
-- `api/detect.js` 依賴 `GEMINI_API_KEY`，沒有設就無法做 grounding 的 AI 物件辨識。
-- 原始 `AR-ball` 與 `AR-grounding` 模組內仍有部分舊文案亂碼，這不影響先部署，但展示前建議再做一輪文案清理。
+- `file://` 直接打開時，DECIDE 會退回前端示範模式，不會真的呼叫 OpenAI API。
+- 真正的 OpenAI API 版本需要透過 Vercel 網址或其他有 serverless API 的環境來測。
+- `AR-ball` 若使用 8th Wall / A-Frame，正式網域可能還需要對應平台設定。
