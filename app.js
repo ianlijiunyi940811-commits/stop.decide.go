@@ -32,45 +32,12 @@ var stepMap = {
   feedback: { index: "03", progress: ["warm", "gold", "green"] }
 };
 
-var fallbackReplies = {
-  trigger: {
-    acknowledgement: "謝謝你願意說出來。",
-    supportiveLine: "我們先不用急著解決，先一起把感覺看清楚。",
-    transition: "我想再陪你看看，你的身體哪裡最不舒服？"
-  },
-  body: {
-    acknowledgement: "你有注意到身體的感覺，這很重要。",
-    supportiveLine: "身體也會幫我們知道現在有多不舒服。",
-    transition: "如果現在用 1 到 5 分來看，你覺得大概有幾分？"
-  },
-  scale: {
-    acknowledgement: "謝謝你把現在的分數說清楚。",
-    supportiveLine: "不用一次變得很好，我們先做一個小步驟。",
-    transition: "你想先做哪一件事，讓自己舒服一點？"
-  },
-  action: {
-    acknowledgement: "這是一個可以開始的小行動。",
-    supportiveLine: "先做這一步就很好，不需要一次處理全部。",
-    transition: "做完後再回來告訴我，你現在感覺怎麼樣。"
-  },
-  feedback: {
-    acknowledgement: "謝謝你回來告訴我。",
-    supportiveLine: "不管有沒有立刻變好，你剛剛願意試試看已經很棒。",
-    transition: "我們先把今天完成的這一步記下來。"
-  }
-};
-
 function byId(id) {
   return document.getElementById(id);
 }
 
 function all(selector) {
   return Array.prototype.slice.call(document.querySelectorAll(selector));
-}
-
-function setDisabled(id, disabled) {
-  var node = byId(id);
-  if (node) node.disabled = disabled;
 }
 
 function normalize(value) {
@@ -96,10 +63,19 @@ function setHtml(id, html) {
   if (node) node.innerHTML = html;
 }
 
+function setDisabled(id, disabled) {
+  var node = byId(id);
+  if (node) node.disabled = disabled;
+}
+
 function resetSelected(selector) {
   all(selector).forEach(function (node) {
     node.classList.remove("is-selected");
   });
+}
+
+function includesText(text, keyword) {
+  return normalize(text).indexOf(keyword) !== -1;
 }
 
 function buildProgressPips(progress) {
@@ -152,8 +128,202 @@ function showScreen(screenName) {
   setText("homePoints", screenName === "complete" ? "17 pt" : "12 pt");
 }
 
-function getFallbackReply(step) {
-  return fallbackReplies[step] || fallbackReplies.feedback;
+function triggerFallback(input) {
+  if (includesText(input, "誤會")) {
+    return {
+      acknowledgement: "被誤會的時候，心裡常常會很委屈。",
+      supportiveLine: "謝謝你願意把這件事說出來，我會陪你慢慢整理。",
+      transition: "我想再知道，這件事讓你的身體哪裡最不舒服？",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "功課") || includesText(input, "做不到")) {
+    return {
+      acknowledgement: "功課太難的時候，真的會讓人很卡、很挫折。",
+      supportiveLine: "先不用急著做到完美，我們先看見你現在的壓力。",
+      transition: "這個壓力現在比較像出現在身體哪裡？",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "朋友") || includesText(input, "衝突")) {
+    return {
+      acknowledgement: "跟朋友發生衝突，常常會讓心裡又亂又難受。",
+      supportiveLine: "你願意停下來說一說，這是很重要的一步。",
+      transition: "我想陪你看看，你的身體現在哪裡最有感覺？",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "老師")) {
+    return {
+      acknowledgement: "聽到讓自己難受的話，心裡會縮起來或生氣都很可以理解。",
+      supportiveLine: "我們先照顧你現在的感覺，不急著判斷對錯。",
+      transition: "這種感覺現在比較卡在身體哪裡？",
+      riskLevel: "low"
+    };
+  }
+
+  return {
+    acknowledgement: "有人說了讓你生氣的話，真的很容易一下子火起來。",
+    supportiveLine: "謝謝你願意告訴我，我們先一起把感覺放慢。",
+    transition: "我想再陪你看看，你的身體哪裡最不舒服？",
+    riskLevel: "low"
+  };
+}
+
+function bodyFallback(input) {
+  if (includesText(input, "頭") || includesText(input, "腦")) {
+    return {
+      acknowledgement: "頭很痛、腦袋很脹的時候，通常代表你已經很用力撐著了。",
+      supportiveLine: "你有注意到這個訊號，這很重要。",
+      transition: "如果用 1 到 5 分來看，現在大概有幾分？",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "心跳") || includesText(input, "胸口")) {
+    return {
+      acknowledgement: "心跳很快、胸口很悶，身體可能正在提醒你它需要慢下來。",
+      supportiveLine: "你說得很清楚，我們可以一起接住這個感覺。",
+      transition: "現在這種不舒服大概有幾分？",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "手很緊") || includesText(input, "打東西")) {
+    return {
+      acknowledgement: "手很緊、很想用力，表示那股情緒真的很強。",
+      supportiveLine: "先看到它就好，我們不需要被它推著走。",
+      transition: "如果用 1 到 5 分來看，這股感覺現在有幾分？",
+      riskLevel: "medium"
+    };
+  }
+
+  if (includesText(input, "發抖") || includesText(input, "熱")) {
+    return {
+      acknowledgement: "臉熱熱、身體發抖的時候，真的會很不舒服。",
+      supportiveLine: "謝謝你把身體的訊號告訴我。",
+      transition: "我們用 1 到 5 分看看，現在有多強？",
+      riskLevel: "low"
+    };
+  }
+
+  return {
+    acknowledgement: "整個人覺得空白的時候，可能是身體想先保護自己。",
+    supportiveLine: "我們可以不用急，先用一個分數看見它。",
+    transition: "現在如果用 1 到 5 分來看，大概是幾分？",
+    riskLevel: "low"
+  };
+}
+
+function scaleFallback(input) {
+  var score = Number(input);
+  if (score >= 4) {
+    return {
+      acknowledgement: score + " 分代表這個感覺現在真的滿強的。",
+      supportiveLine: "你願意誠實說出來，已經是在幫自己了。",
+      transition: "我們先選一件最容易開始的小行動，讓身體慢慢降下來。",
+      riskLevel: "low"
+    };
+  }
+
+  if (score === 3) {
+    return {
+      acknowledgement: "3 分代表這個感覺還在，但你已經能看見它了。",
+      supportiveLine: "不用一次全部解決，先挑一個做得到的行動。",
+      transition: "下面哪一件事現在最適合你？",
+      riskLevel: "low"
+    };
+  }
+
+  return {
+    acknowledgement: score + " 分代表你已經比剛才穩一點了。",
+    supportiveLine: "我們可以選一個小小的行動，把這份穩定留下來。",
+    transition: "你想先做哪一件事？",
+    riskLevel: "low"
+  };
+}
+
+function actionFallback(input) {
+  if (includesText(input, "喝點水")) {
+    return {
+      acknowledgement: "喝點水、安靜一下，是很適合先讓身體慢下來的方法。",
+      supportiveLine: "你不用一次處理全部，先照顧自己就很好。",
+      transition: "做完後回來告訴我，感覺有沒有變化。",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "老師")) {
+    return {
+      acknowledgement: "找老師說說話，是一個很勇敢也很實際的選擇。",
+      supportiveLine: "有人陪你一起面對，事情會比較不那麼重。",
+      transition: "說完後再回來看看，你有沒有比較穩一點。",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "走走")) {
+    return {
+      acknowledgement: "出去走走、動一動，可以幫身體把卡住的感覺放掉一點。",
+      supportiveLine: "先換個位置，也是在照顧自己。",
+      transition: "走完回來，我們一起看看感覺有沒有變化。",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "歌")) {
+    return {
+      acknowledgement: "聽一首喜歡的歌，可以讓很緊的心慢慢鬆一點。",
+      supportiveLine: "這是一個溫柔、也很容易開始的方法。",
+      transition: "聽完後回來告訴我，現在感覺如何。",
+      riskLevel: "low"
+    };
+  }
+
+  return {
+    acknowledgement: "畫畫或塗鴉可以把說不出來的感覺放到紙上。",
+    supportiveLine: "不用畫得漂亮，只要讓感覺有地方出去就好。",
+    transition: "畫完後再回來看看，你現在有沒有不同。",
+    riskLevel: "low"
+  };
+}
+
+function feedbackFallback(input) {
+  if (includesText(input, "好很多")) {
+    return {
+      acknowledgement: "太好了，你有感覺到自己慢慢回來了。",
+      supportiveLine: "這是你剛剛願意停下來、照顧自己的結果。",
+      transition: "我們把這次有幫助的方法記下來。",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "平靜")) {
+    return {
+      acknowledgement: "有平靜一點就很值得，代表身體開始慢慢放鬆了。",
+      supportiveLine: "不需要一下子變得完全沒事，比剛剛好一點就很重要。",
+      transition: "我們一起完成今天這一步。",
+      riskLevel: "low"
+    };
+  }
+
+  return {
+    acknowledgement: "做完後還是很煩，真的會讓人有點失望。",
+    supportiveLine: "但你剛剛願意試試看，這本身就很勇敢。",
+    transition: "我們先把這一步完成，下次可以再試別的方法。",
+    riskLevel: "medium"
+  };
+}
+
+function getFallbackReply(step, input) {
+  if (step === "trigger") return triggerFallback(input);
+  if (step === "body") return bodyFallback(input);
+  if (step === "scale") return scaleFallback(input);
+  if (step === "action") return actionFallback(input);
+  return feedbackFallback(input);
 }
 
 function buildPayload(step, input) {
@@ -175,7 +345,7 @@ function getAiGuidance(step, input) {
   var value = normalize(input);
 
   if (!value || window.location.protocol === "file:" || typeof fetch !== "function") {
-    return Promise.resolve(getFallbackReply(step));
+    return Promise.resolve(getFallbackReply(step, value));
   }
 
   return fetch("/api/decide", {
@@ -188,11 +358,14 @@ function getAiGuidance(step, input) {
       return response.json();
     })
     .then(function (data) {
-      if (data && data.result && data.result.acknowledgement) return data.result;
-      return getFallbackReply(step);
+      if (data && data.result && data.result.acknowledgement) {
+        data.result.source = "api";
+        return data.result;
+      }
+      return getFallbackReply(step, value);
     })
     .catch(function () {
-      return getFallbackReply(step);
+      return getFallbackReply(step, value);
     });
 }
 
@@ -207,11 +380,16 @@ function renderAiNote(id, reply) {
   );
 }
 
+function renderThinking(id) {
+  setHtml(id, '<div class="chat-bubble thinking">AI 夥伴正在幫你整理...</div>');
+}
+
 function renderConversation(id, userText, reply) {
   setHtml(
     id,
     '<div class="chat-bubble user">' + escapeHtml(userText) + "</div>" +
-      '<div class="chat-bubble ai">' + escapeHtml(reply.acknowledgement) +
+      '<div class="chat-bubble ai ai-response"><strong>AI 夥伴</strong>' +
+      escapeHtml(reply.acknowledgement) +
       "<span>" + escapeHtml(reply.supportiveLine) + "</span></div>" +
       '<div class="chat-bubble ai compact">' + escapeHtml(reply.transition) + "</div>"
   );
@@ -224,10 +402,11 @@ function submitDecideStep(step, input, source) {
   if (step === "trigger") {
     state.trigger = value;
     setText("selectedTriggerText", value);
+    renderThinking("triggerResponseArea");
     getAiGuidance("trigger", value).then(function (reply) {
       renderConversation("triggerResponseArea", value, reply);
       setDisabled("chat1ContinueButton", false);
-      setHtml("triggerLeadMessage", '謝謝你願意說出來。先把事情放在這裡，我們一步一步來。<span>你可以選項，也可以自己補充。</span>');
+      setHtml("triggerLeadMessage", '謝謝你願意說出來。先把事情放在這裡，我們一步一步來。<span>AI 會依照你剛剛的回答，陪你走到下一步。</span>');
       if (source !== "choice") resetSelected(".chat-option[data-trigger]");
       var inputNode = byId("triggerInput");
       if (inputNode) inputNode.value = "";
@@ -237,10 +416,11 @@ function submitDecideStep(step, input, source) {
 
   if (step === "body") {
     state.body = value;
+    renderThinking("bodyResponseArea");
     getAiGuidance("body", value).then(function (reply) {
       renderConversation("bodyResponseArea", value, reply);
       setDisabled("chat2ContinueButton", false);
-      setText("bodyLeadMessage", "謝謝你把身體的感覺說出來，這會幫助我們更照顧你。");
+      setText("bodyLeadMessage", "謝謝你把身體的感覺說出來，AI 會陪你把它整理成下一步。");
       if (source !== "choice") resetSelected(".chat-option[data-body]");
       var inputNode = byId("bodyInput");
       if (inputNode) inputNode.value = "";
@@ -281,11 +461,11 @@ function bindChoiceList(selector, dataKey, nextStep, inputId, helperId) {
   all(selector).forEach(function (button) {
     button.addEventListener("click", function () {
       var value = button.dataset[dataKey] || "";
+      var options = all(selector);
 
       resetSelected(selector);
       button.classList.add("is-selected");
 
-      var options = all(selector);
       if (button === options[options.length - 1]) {
         var input = byId(inputId);
         if (input) input.focus();
