@@ -23,6 +23,7 @@ body {
   background: #ece6de;
   font-family: "Noto Sans TC", sans-serif;
   color: var(--text);
+  overflow: hidden;
 }
 
 button,
@@ -31,9 +32,23 @@ textarea {
   font: inherit;
 }
 
+button,
+select,
+input,
+textarea {
+  color: inherit;
+}
+
+button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .app-shell {
   width: min(100vw, 1900px);
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
   margin: 0 auto;
   background: var(--bg);
   display: grid;
@@ -223,7 +238,7 @@ textarea {
 
 .screen-wrap {
   position: relative;
-  overflow: auto;
+  overflow: hidden;
   background: var(--screen-tint, #fff);
   min-height: 0;
 }
@@ -1070,6 +1085,7 @@ button.entry-card:hover {
   text-align: left;
   font-size: 24px;
   font-weight: 900;
+  color: var(--text);
 }
 
 .chat-option .radio,
@@ -1476,7 +1492,7 @@ button.entry-card:hover {
   }
 
   .option-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .feedback-grid {
@@ -1486,5 +1502,318 @@ button.entry-card:hover {
   .points-card {
     grid-template-columns: 1fr;
     text-align: center;
+  }
+}
+
+@media (max-width: 1400px) and (orientation: landscape) {
+  .app-shell {
+    border-radius: 0;
+    grid-template-rows: 30px 58px 64px 64px minmax(0, 1fr) 82px;
+  }
+
+  .status-bar {
+    font-size: 16px;
+  }
+
+  .status-dots span {
+    width: 10px;
+    height: 10px;
+  }
+
+  .brand-pill {
+    min-width: 170px;
+    height: 38px;
+    font-size: 18px;
+  }
+
+  .flow-nav {
+    min-height: 64px;
+  }
+
+  .close-button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .pip {
+    width: 58px;
+    height: 12px;
+    border-width: 3px;
+  }
+
+  .step-pill {
+    min-width: 64px;
+    height: 38px;
+    border-width: 3px;
+    font-size: 18px;
+  }
+
+  .chat-header {
+    gap: 12px;
+  }
+
+  .chat-avatar svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .chat-header h3 {
+    font-size: 22px;
+  }
+
+  .chat-header p {
+    font-size: 15px;
+  }
+
+  .home-screen,
+  .entry-screen,
+  .single-step,
+  .complete-screen {
+    padding: 30px 46px 24px;
+  }
+
+  .home-screen h1,
+  .title {
+    font-size: clamp(42px, 4.6vw, 66px);
+  }
+
+  .home-screen p,
+  .subtitle {
+    margin-top: 10px;
+    font-size: 18px;
+  }
+
+  .emotion-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 26px;
+  }
+
+  .emotion-grid.compact {
+    margin-top: 34px;
+  }
+
+  .emotion-card {
+    min-height: 250px;
+    border-width: 4px;
+    border-radius: 28px;
+    padding: 24px 16px 18px;
+    gap: 14px;
+  }
+
+  .emotion-card strong {
+    font-size: 22px;
+  }
+
+  .face-disc {
+    width: 128px;
+    height: 128px;
+  }
+
+  .primary-cta {
+    margin-top: 28px;
+    min-height: 70px;
+    font-size: 22px;
+  }
+
+  .home-hint {
+    margin-top: 12px;
+    font-size: 15px;
+  }
+
+  .two-pane {
+    grid-template-columns: 1.35fr .9fr;
+  }
+
+  .pane-main,
+  .pane-side {
+    padding: 24px 34px 20px;
+  }
+
+  .pane-side {
+    border-left: 1px solid var(--line);
+    border-top: none;
+  }
+
+  .ar-stage {
+    min-height: 360px;
+    margin-top: 22px;
+  }
+
+  .breathing-illustration {
+    width: 280px;
+    height: 280px;
+  }
+
+  .breath-ball {
+    width: 138px;
+    height: 138px;
+  }
+
+  .breathing-text {
+    font-size: 26px;
+  }
+
+  .ai-card {
+    padding: 18px 20px;
+    border-radius: 22px;
+  }
+
+  .ai-card + .ai-card {
+    margin-top: 18px;
+  }
+
+  .ai-card h3,
+  .ai-note p,
+  .check-item strong,
+  .points-card h3 {
+    font-size: 20px;
+  }
+
+  .chat-screen {
+    padding: 12px 30px 12px;
+  }
+
+  .chat-stream {
+    padding: 6px 0 10px;
+    overflow: hidden;
+  }
+
+  .decide-companion {
+    max-width: 980px;
+    margin-bottom: 14px;
+    padding: 14px 18px;
+    border-radius: 22px;
+    grid-template-columns: 52px 1fr;
+  }
+
+  .decide-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 18px;
+  }
+
+  .decide-companion strong {
+    font-size: 22px;
+  }
+
+  .decide-companion p {
+    margin-top: 3px;
+    font-size: 15px;
+  }
+
+  .ai-question-panel {
+    width: min(1180px, calc(100% - 28px));
+    margin-bottom: 18px;
+    padding: 18px 24px 20px;
+    border-width: 3px;
+    border-radius: 26px;
+  }
+
+  .decide-question-title {
+    font-size: clamp(38px, 4.8vw, 58px);
+  }
+
+  .decide-question-subtitle {
+    margin-top: 8px;
+    font-size: 18px;
+  }
+
+  .chat-bubble {
+    margin-bottom: 14px;
+    padding: 18px 24px;
+    border-radius: 22px;
+    font-size: 22px;
+  }
+
+  .chat-bubble span {
+    font-size: 15px;
+  }
+
+  .option-grid {
+    gap: 14px 18px;
+  }
+
+  .chat-option,
+  .action-item,
+  .decision-item {
+    min-height: 68px;
+    border-width: 3px;
+    gap: 16px;
+    padding: 0 22px;
+    font-size: 20px;
+  }
+
+  .chat-option .radio,
+  .action-item .radio-fill,
+  .decision-item .radio-fill {
+    width: 38px;
+    height: 38px;
+  }
+
+  .chat-input-row {
+    grid-template-columns: 58px 1fr 64px;
+    gap: 12px;
+    padding-top: 10px;
+  }
+
+  .mic-button,
+  .send-button {
+    width: 58px;
+    height: 58px;
+  }
+
+  .chat-input {
+    min-height: 58px;
+    font-size: 20px;
+  }
+
+  .chat-compose {
+    padding-top: 10px;
+  }
+
+  .chat-helper {
+    margin-top: 6px;
+    font-size: 13px;
+  }
+
+  .step-continue {
+    width: min(640px, 86%);
+  }
+
+  .bottom-nav {
+    min-height: 82px;
+  }
+
+  .nav-item {
+    gap: 4px;
+    font-size: 15px;
+  }
+
+  .nav-item svg {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+@media (max-width: 760px), (orientation: portrait) and (max-width: 1100px) {
+  body {
+    overflow: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    max-height: none;
+    min-height: 100dvh;
+  }
+
+  .screen-wrap {
+    overflow: auto;
+  }
+
+  .option-grid,
+  .emotion-grid,
+  .scale-grid {
+    grid-template-columns: 1fr;
   }
 }
