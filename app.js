@@ -4,6 +4,8 @@ var state = {
   trigger: "",
   body: "",
   scale: "",
+  need: "",
+  wish: "",
   action: "",
   feedback: ""
 };
@@ -57,6 +59,8 @@ function trackEvent(eventType, step, value, payload) {
       trigger: state.trigger,
       body: state.body,
       scale: state.scale,
+      need: state.need,
+      wish: state.wish,
       action: state.action,
       feedback: state.feedback
     }, payload || {})
@@ -71,6 +75,8 @@ var themeMap = {
   chat1: "neutral",
   chat2: "neutral",
   scale: "neutral",
+  need: "neutral",
+  wish: "neutral",
   action: "green",
   feedback: "green",
   complete: "green"
@@ -83,6 +89,8 @@ var stepMap = {
   chat1: { index: "02", progress: ["warm", "gold"] },
   chat2: { index: "02", progress: ["warm", "gold"] },
   scale: { index: "02", progress: ["warm", "gold"] },
+  need: { index: "02", progress: ["warm", "gold"] },
+  wish: { index: "02", progress: ["warm", "gold"] },
   action: { index: "03", progress: ["warm", "gold", "green"] },
   feedback: { index: "03", progress: ["warm", "gold", "green"] }
 };
@@ -301,6 +309,60 @@ function scaleFallback(input) {
   };
 }
 
+function needFallback(input) {
+  if (includesText(input, "安靜")) {
+    return {
+      acknowledgement: "你發現自己需要安靜一下，這是很好的自我照顧。",
+      supportiveLine: "先讓身體有一點空間，情緒會比較容易慢慢降下來。",
+      transition: "接下來我們想一想，你希望事情往哪個方向走？",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "陪")) {
+    return {
+      acknowledgement: "你想要有人陪，代表你知道自己不必一個人撐著。",
+      supportiveLine: "找一個安全的大人或信任的人，是很勇敢的選擇。",
+      transition: "接下來我們看看，你希望接下來變成什麼樣子？",
+      riskLevel: "low"
+    };
+  }
+
+  return {
+    acknowledgement: "你正在把自己的需要說清楚，這很重要。",
+    supportiveLine: "知道需要什麼，會讓下一步比較不慌。",
+    transition: "接下來我們看看，你希望事情往哪個方向變好？",
+    riskLevel: "low"
+  };
+}
+
+function wishFallback(input) {
+  if (includesText(input, "冷靜")) {
+    return {
+      acknowledgement: "你想先冷靜下來，這是一個很穩的方向。",
+      supportiveLine: "我們先不用急著解決全部，只要做一件能讓你穩一點的小事。",
+      transition: "現在選一個最做得到的 GO 行動吧。",
+      riskLevel: "low"
+    };
+  }
+
+  if (includesText(input, "理解") || includesText(input, "幫忙")) {
+    return {
+      acknowledgement: "你希望被理解或有人幫忙，這個需要很合理。",
+      supportiveLine: "讓安全的大人知道你的狀況，可以讓事情比較不孤單。",
+      transition: "現在選一個最適合你的 GO 行動吧。",
+      riskLevel: "low"
+    };
+  }
+
+  return {
+    acknowledgement: "你已經想出一個希望前進的方向了。",
+    supportiveLine: "接下來不用做很大的事，只要做一個小小的下一步。",
+    transition: "現在選一個可以開始的 GO 行動吧。",
+    riskLevel: "low"
+  };
+}
+
 function actionFallback(input) {
   if (includesText(input, "喝點水")) {
     return {
@@ -377,6 +439,8 @@ function getFallbackReply(step, input) {
   if (step === "trigger") return triggerFallback(input);
   if (step === "body") return bodyFallback(input);
   if (step === "scale") return scaleFallback(input);
+  if (step === "need") return needFallback(input);
+  if (step === "wish") return wishFallback(input);
   if (step === "action") return actionFallback(input);
   return feedbackFallback(input);
 }
@@ -389,6 +453,8 @@ function buildPayload(step, input) {
       trigger: state.trigger,
       body: state.body,
       scale: state.scale,
+      need: state.need,
+      wish: state.wish,
       action: state.action,
       feedback: state.feedback
     },
@@ -570,6 +636,27 @@ function bindScale() {
   });
 }
 
+function bindDecisionItems(selector, stateKey, step, noteId, doneButtonId) {
+  all(selector).forEach(function (item) {
+    item.addEventListener("click", function () {
+      resetSelected(selector);
+      item.classList.add("is-selected");
+      state[stateKey] = item.dataset[stateKey] || "";
+      setDisabled(doneButtonId, false);
+      trackEvent("decide_answered", step, state[stateKey]);
+      getAiGuidance(step, state[stateKey]).then(function (reply) {
+        trackEvent("ai_guidance", step, reply.riskLevel || "low", {
+          acknowledgement: reply.acknowledgement,
+          supportiveLine: reply.supportiveLine,
+          transition: reply.transition,
+          source: reply.source || "fallback"
+        });
+        renderAiNote(noteId, reply);
+      });
+    });
+  });
+}
+
 function bindActions() {
   all(".action-item").forEach(function (item) {
     item.addEventListener("click", function () {
@@ -664,6 +751,14 @@ function bindStaticFlow() {
   bindButton("chat2ContinueButton", function () { showScreen("scale"); });
   bindButton("scaleDoneButton", function () {
     trackEvent("step_completed", "scale", state.scale);
+    showScreen("need");
+  });
+  bindButton("needDoneButton", function () {
+    trackEvent("step_completed", "need", state.need);
+    showScreen("wish");
+  });
+  bindButton("wishDoneButton", function () {
+    trackEvent("step_completed", "wish", state.wish);
     showScreen("action");
   });
   bindButton("actionDoneButton", function () {
@@ -679,6 +774,8 @@ function bindStaticFlow() {
         trigger: state.trigger,
         body: state.body,
         scale: state.scale,
+        need: state.need,
+        wish: state.wish,
         action: state.action,
         feedback: state.feedback
       }
@@ -760,6 +857,8 @@ function init() {
   bindChoiceList(".chat-option[data-trigger]", "trigger", "trigger", "triggerInput", "triggerVoiceStatus");
   bindChoiceList(".chat-option[data-body]", "body", "body", "bodyInput", "bodyVoiceStatus");
   bindScale();
+  bindDecisionItems(".decision-item[data-need]", "need", "need", "needAiNote", "needDoneButton");
+  bindDecisionItems(".decision-item[data-wish]", "wish", "wish", "wishAiNote", "wishDoneButton");
   bindActions();
   bindFeedback();
   bindStaticFlow();
