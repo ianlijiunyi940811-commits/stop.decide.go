@@ -15,7 +15,7 @@
       <div>
         <p>Research Admin</p>
         <h1>Stop Decide Go 後台</h1>
-        <span>查看匿名使用紀錄、DECIDE 選項、完成率與匯出研究資料。</span>
+        <span>查看每位受試者的情緒變化、DECIDE 回答、AI 陪伴紀錄與 GO 行動選擇。</span>
       </div>
       <form class="login-card" id="loginForm">
         <label for="adminPassword">管理密碼</label>
@@ -23,19 +23,19 @@
           <input id="adminPassword" type="password" autocomplete="current-password" placeholder="輸入 ADMIN_PASSWORD">
           <button type="submit">登入</button>
         </div>
-        <small id="loginStatus">密碼只會存在此瀏覽器，不會寫進 GitHub。</small>
+        <small id="loginStatus">請輸入你在 Vercel 設定的 ADMIN_PASSWORD。</small>
       </form>
     </section>
 
     <section class="toolbar" id="toolbar" hidden>
       <button id="refreshButton" type="button">重新整理</button>
-      <button id="exportButton" type="button">匯出 CSV</button>
+      <button id="exportButton" type="button">匯出流程 CSV</button>
       <button id="logoutButton" type="button">登出</button>
     </section>
 
     <section class="stats-grid" id="statsGrid" hidden>
       <article>
-        <span>總 sessions</span>
+        <span>總受試 sessions</span>
         <strong id="totalSessions">0</strong>
       </article>
       <article>
@@ -52,16 +52,52 @@
       </article>
     </section>
 
+    <section class="chart-grid" id="chartGrid" hidden>
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <h2>常見衝突原因</h2>
+          <span>來自 AI 引導中「剛才發生什麼事」的回答</span>
+        </div>
+        <div id="triggerChart" class="bar-chart"></div>
+      </article>
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <h2>情緒調節結果</h2>
+          <span>比較一開始情緒與呼吸後情緒</span>
+        </div>
+        <div id="improvementChart" class="pie-layout"></div>
+      </article>
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <h2>初始情緒分布</h2>
+          <span>學生進入流程時選擇的情緒</span>
+        </div>
+        <div id="homeEmotionChart" class="bar-chart compact"></div>
+      </article>
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <h2>GO 行動選擇</h2>
+          <span>學生最後想先做的自我調節行動</span>
+        </div>
+        <div id="actionChart" class="bar-chart compact"></div>
+      </article>
+    </section>
+
     <section class="admin-grid" id="adminContent" hidden>
-      <article class="panel">
-        <h2>最近 sessions</h2>
+      <article class="panel sessions-panel">
+        <div class="panel-heading">
+          <h2>受試者流程紀錄</h2>
+          <span>點選任一列查看完整作答與 AI 回覆</span>
+        </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>時間</th>
                 <th>受試者</th>
-                <th>事件</th>
+                <th>時間</th>
+                <th>情緒前後</th>
+                <th>衝突原因</th>
+                <th>GO 選擇</th>
                 <th>狀態</th>
               </tr>
             </thead>
@@ -70,23 +106,16 @@
         </div>
       </article>
 
-      <article class="panel">
-        <h2>常見選項</h2>
-        <div id="choiceList" class="choice-list"></div>
-      </article>
-
-      <article class="panel">
-        <h2>事件類型</h2>
-        <div id="eventList" class="choice-list"></div>
-      </article>
-
-      <article class="panel">
-        <h2>Session 細節</h2>
-        <div id="sessionDetail" class="detail-box">點選最近 sessions 中的一筆資料查看事件流。</div>
+      <article class="panel detail-panel">
+        <div class="panel-heading">
+          <h2>完整個案紀錄</h2>
+          <span id="detailSubtitle">尚未選擇受試者</span>
+        </div>
+        <div id="sessionDetail" class="detail-box">請從左側受試者流程紀錄選擇一筆資料。</div>
       </article>
     </section>
   </main>
 
-  <script src="./admin.js"></script>
+  <script src="./admin.js?v=20260608-research-v2"></script>
 </body>
 </html>
