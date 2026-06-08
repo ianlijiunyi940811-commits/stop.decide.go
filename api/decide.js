@@ -5,19 +5,19 @@ const STEP_CONFIG = {
   },
   body: {
     goal: "Respond to the child's body sensation and connect it gently to emotional awareness.",
-    transition: "Ask the child to choose a 1 to 5 feeling intensity score."
+    transition: "Ask what thought or meaning came up when the event happened."
   },
   scale: {
-    goal: "Respond to the child's current intensity score without labeling it as good or bad.",
-    transition: "Ask what kind of support the child needs right now."
+    goal: "Respond to the child's current intensity score after they have explored the reason.",
+    transition: "Invite the child to move into GO and choose one small doable action."
   },
   need: {
-    goal: "Respond to what the child says they need right now. Help them feel that the need is valid and manageable.",
-    transition: "Ask what the child hopes can happen next."
+    goal: "Respond to the thought, belief, or meaning behind the emotion. Help the child name why the event felt upsetting.",
+    transition: "Ask what part of the situation matters most or feels most stuck."
   },
   wish: {
-    goal: "Respond to the child's preferred direction for what should happen next.",
-    transition: "Invite the child to choose one small doable GO action."
+    goal: "Respond to the deeper reason the child identifies. Help them feel understood before rating the current feeling.",
+    transition: "Ask the child to rate how strong the feeling is now from 1 to 5."
   },
   action: {
     goal: "Support the child's chosen action and encourage one small doable step.",
