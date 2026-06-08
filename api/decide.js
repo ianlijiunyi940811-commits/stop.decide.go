@@ -7,10 +7,6 @@ const STEP_CONFIG = {
     goal: "Respond to the child's body sensation and connect it gently to emotional awareness.",
     transition: "Ask what thought or meaning came up when the event happened."
   },
-  scale: {
-    goal: "Respond to the child's current intensity score after they have explored the reason.",
-    transition: "Invite the child to move into GO and choose one small doable action."
-  },
   need: {
     goal: "Respond to the thought, belief, or meaning behind the emotion. Help the child name why the event felt upsetting.",
     transition: "Ask what part of the situation matters most or feels most stuck."
@@ -18,6 +14,10 @@ const STEP_CONFIG = {
   wish: {
     goal: "Respond to the deeper reason the child identifies. Help them feel understood before rating the current feeling.",
     transition: "Ask the child to rate how strong the feeling is now from 1 to 5."
+  },
+  scale: {
+    goal: "Respond to the child's current intensity score after they have explored the reason.",
+    transition: "Invite the child to move into GO and choose one small doable action."
   },
   action: {
     goal: "Support the child's chosen action and encourage one small doable step.",
@@ -29,8 +29,43 @@ const STEP_CONFIG = {
   }
 };
 
+function jsonError(res, status, error, detail) {
+  return res.status(status).json({
+    ok: false,
+    error,
+    detail: detail || null
+  });
+}
+
+function cleanText(value, maxLength = 600) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
 function getStepConfig(step) {
   return STEP_CONFIG[step] || STEP_CONFIG.trigger;
+}
+
+function normalizeBody(reqBody) {
+  if (!reqBody) return {};
+  if (typeof reqBody === "string") {
+    try {
+      return JSON.parse(reqBody);
+    } catch (error) {
+      return { __invalidJson: true };
+    }
+  }
+  return reqBody;
+}
+
+function getInputText(body) {
+  return cleanText(
+    body?.input?.text ||
+    body?.text ||
+    body?.message ||
+    body?.value ||
+    body?.answer ||
+    ""
+  );
 }
 
 function buildMessages({ step, selectedEmotion, context, inputText }) {
@@ -63,9 +98,9 @@ Initial emotion: ${selectedEmotion || "unknown"}
 Session context:
 - trigger: ${context.trigger || "none"}
 - body: ${context.body || "none"}
-- scale: ${context.scale || "none"}
 - need: ${context.need || "none"}
 - wish: ${context.wish || "none"}
+- scale: ${context.scale || "none"}
 - action: ${context.action || "none"}
 - feedback: ${context.feedback || "none"}
 
@@ -105,9 +140,9 @@ function extractOutputText(data) {
 
 function parseResult(text) {
   const fallback = {
-    acknowledgement: "謝謝你願意告訴我。",
-    supportiveLine: "我們先一起慢慢整理，不用急。",
-    transition: "我們看下一步。",
+    acknowledgement: "謝謝你願意說出來。",
+    supportiveLine: "我們可以慢慢整理，不需要急著一次解決。",
+    transition: "接下來跟著畫面走下一步就好。",
     riskLevel: "low"
   };
 
@@ -116,23 +151,16 @@ function parseResult(text) {
   try {
     const parsed = JSON.parse(text);
     return {
-      acknowledgement: parsed.acknowledgement || fallback.acknowledgement,
-      supportiveLine: parsed.supportiveLine || fallback.supportiveLine,
-      transition: parsed.transition || fallback.transition,
-      riskLevel: parsed.riskLevel || "low"
+      acknowledgement: cleanText(parsed.acknowledgement, 180) || fallback.acknowledgement,
+      supportiveLine: cleanText(parsed.supportiveLine, 180) || fallback.supportiveLine,
+      transition: cleanText(parsed.transition, 180) || fallback.transition,
+      riskLevel: ["low", "medium", "high"].includes(parsed.riskLevel) ? parsed.riskLevel : "low"
     };
   } catch (error) {
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) return fallback;
-
     try {
-      const parsed = JSON.parse(match[0]);
-      return {
-        acknowledgement: parsed.acknowledgement || fallback.acknowledgement,
-        supportiveLine: parsed.supportiveLine || fallback.supportiveLine,
-        transition: parsed.transition || fallback.transition,
-        riskLevel: parsed.riskLevel || "low"
-      };
+      return parseResult(match[0]);
     } catch (innerError) {
       return fallback;
     }
@@ -146,37 +174,33 @@ export default async function handler(req, res) {
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return jsonError(res, 405, "Method not allowed");
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
   if (!apiKey) {
-    return res.status(500).json({ error: "OPENAI_API_KEY not configured" });
+    return jsonError(res, 500, "OPENAI_API_KEY not configured");
   }
 
-  let body = req.body;
-  if (typeof body === "string") {
-    try {
-      body = JSON.parse(body);
-    } catch (error) {
-      return res.status(400).json({ error: "Invalid JSON body" });
-    }
+  const body = normalizeBody(req.body);
+  if (body.__invalidJson) {
+    return jsonError(res, 400, "Invalid JSON body");
   }
 
-  const step = body && body.step;
-  const inputText = body && body.input && typeof body.input.text === "string"
-    ? body.input.text.trim()
-    : "";
+  const step = cleanText(body.step || "trigger", 40);
+  const inputText = getInputText(body);
 
-  if (!step || !inputText) {
-    return res.status(400).json({ error: "Missing step or input.text" });
+  if (!inputText) {
+    return jsonError(res, 400, "Missing input text", {
+      expected: "Send { step, input: { text } }",
+      receivedKeys: Object.keys(body || {})
+    });
   }
 
   const payload = {
     model,
-    reasoning: { effort: "low" },
     input: buildMessages({
       step,
       selectedEmotion: body.selectedEmotion,
@@ -218,19 +242,21 @@ export default async function handler(req, res) {
 
     data = await response.json();
   } catch (error) {
-    return res.status(500).json({ error: error.message || "OpenAI request failed" });
+    return jsonError(res, 500, error.message || "OpenAI request failed");
   }
 
   if (!response.ok) {
-    return res.status(response.status).json({
-      error: (data && data.error && data.error.message) || "OpenAI API error"
-    });
+    return jsonError(
+      res,
+      response.status,
+      data?.error?.message || "OpenAI API error",
+      data?.error || null
+    );
   }
 
-  const result = parseResult(extractOutputText(data));
-
   return res.status(200).json({
-    result,
+    ok: true,
+    result: parseResult(extractOutputText(data)),
     model,
     usage: data.usage || null
   });
