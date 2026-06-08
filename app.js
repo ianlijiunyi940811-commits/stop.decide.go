@@ -15,7 +15,7 @@ function getOrCreateSessionId() {
   var existing = "";
 
   try {
-    existing = window.localStorage.getItem(key) || "";
+    existing = window.sessionStorage.getItem(key) || "";
   } catch (error) {
     existing = "";
   }
@@ -25,9 +25,9 @@ function getOrCreateSessionId() {
   var id = "sdg_" + Date.now() + "_" + Math.random().toString(16).slice(2);
 
   try {
-    window.localStorage.setItem(key, id);
+    window.sessionStorage.setItem(key, id);
   } catch (error) {
-    // Local storage can be unavailable in strict browser modes.
+    // Browser storage can be unavailable in strict browser modes.
   }
 
   return id;
@@ -53,7 +53,12 @@ function trackEvent(eventType, step, value, payload) {
     value: value || "",
     payload: Object.assign({
       homeEmotion: state.homeEmotion,
-      postBreathingEmotion: state.postBreathingEmotion
+      postBreathingEmotion: state.postBreathingEmotion,
+      trigger: state.trigger,
+      body: state.body,
+      scale: state.scale,
+      action: state.action,
+      feedback: state.feedback
     }, payload || {})
   });
 }
@@ -746,12 +751,4 @@ function init() {
   bindEnterSubmit("triggerInput", "trigger");
   bindEnterSubmit("bodyInput", "body");
   setupVoiceInput("triggerMicButton", "triggerInput", "triggerVoiceStatus", "也可以按左邊麥克風說出來。");
-  setupVoiceInput("bodyMicButton", "bodyInput", "bodyVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。");
-  showScreen("home");
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
-  init();
-}
+  setupVoiceInput("bodyMicButton", "bodyInput", "bodyVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。
