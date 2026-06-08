@@ -294,12 +294,92 @@
         </div>
       </section>
 
+      <section class="screen" data-screen="need">
+        <div class="chat-screen">
+          <div class="chat-stream">
+            <div class="decide-companion">
+              <div class="decide-avatar" aria-hidden="true">AI</div>
+              <div>
+                <span>DECIDE 3 / 5</span>
+                <strong>找找情緒背後的想法</strong>
+                <p>我們不是急著解決，而是先理解為什麼這件事會讓你這麼有感覺。</p>
+              </div>
+            </div>
+            <div class="chat-bubble ai large" id="needLeadMessage">你已經說出發生的事，也注意到身體的感覺了。<br>現在我們再往裡面看一點。</div>
+            <div class="chat-bubble user" id="selectedBodyText">我很不舒服</div>
+            <div class="chat-bubble ai" id="needPromptMessage">當這件事發生時，你心裡最強烈的想法是什麼？<span>選一個最接近的，也可以自己說</span></div>
+            <div id="needResponseArea"></div>
+            <div class="option-grid" id="needOptions">
+              <button class="chat-option need-option" data-need="我覺得自己被針對" type="button"><span class="radio"></span>我覺得自己被針對</button>
+              <button class="chat-option need-option" data-need="我覺得沒有人理解我" type="button"><span class="radio"></span>我覺得沒有人理解我</button>
+              <button class="chat-option need-option" data-need="我覺得自己做不好" type="button"><span class="radio"></span>我覺得自己做不好</button>
+              <button class="chat-option need-option" data-need="我覺得很不公平" type="button"><span class="radio"></span>我覺得很不公平</button>
+              <button class="chat-option need-option" data-need="我怕事情變得更糟" type="button"><span class="radio"></span>我怕事情變得更糟</button>
+              <button class="chat-option need-option" data-need="其他想法（我想自己說）" type="button"><span class="radio"></span>其他想法（我想自己說）</button>
+            </div>
+          </div>
+          <div class="chat-compose">
+            <div class="chat-input-row">
+              <button class="mic-button" id="needMicButton" type="button" aria-label="語音輸入">
+                <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 1 1-10 0M12 17v4M9 21h6"/></svg>
+              </button>
+              <input class="chat-input" id="needInput" placeholder="或是打字告訴我你的想法..." type="text">
+              <button class="send-button" id="chat3SendButton" type="button" aria-label="送出">
+                <svg viewBox="0 0 24 24"><path d="M4 12h14M12 4l8 8-8 8"/></svg>
+              </button>
+            </div>
+            <p class="chat-helper" id="needVoiceStatus">也可以按左邊麥克風說出來。</p>
+            <button class="primary-cta gold step-continue" id="needDoneButton" type="button" disabled>我說完了，下一步</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="wish">
+        <div class="chat-screen">
+          <div class="chat-stream">
+            <div class="decide-companion">
+              <div class="decide-avatar" aria-hidden="true">AI</div>
+              <div>
+                <span>DECIDE 4 / 5</span>
+                <strong>說出真正讓你在意的原因</strong>
+                <p>有時候讓人生氣或難過的，不只是事情本身，而是它碰到心裡很在意的地方。</p>
+              </div>
+            </div>
+            <div class="chat-bubble ai large" id="wishLeadMessage">謝謝你把心裡的想法說出來。<br>我們再看一看，這件事真正卡住你的地方是什麼。</div>
+            <div class="chat-bubble user" id="selectedNeedText">我覺得很不公平</div>
+            <div class="chat-bubble ai" id="wishPromptMessage">你覺得這件事最讓你在意的是什麼？<span>選一個最接近的，也可以自己說</span></div>
+            <div id="wishResponseArea"></div>
+            <div class="option-grid" id="wishOptions">
+              <button class="chat-option wish-option" data-wish="我覺得自己沒有被尊重" type="button"><span class="radio"></span>我覺得自己沒有被尊重</button>
+              <button class="chat-option wish-option" data-wish="我覺得努力沒有被看見" type="button"><span class="radio"></span>我覺得努力沒有被看見</button>
+              <button class="chat-option wish-option" data-wish="我很怕又被責怪" type="button"><span class="radio"></span>我很怕又被責怪</button>
+              <button class="chat-option wish-option" data-wish="我不知道怎麼把話說清楚" type="button"><span class="radio"></span>我不知道怎麼把話說清楚</button>
+              <button class="chat-option wish-option" data-wish="我希望有人先聽我說完" type="button"><span class="radio"></span>我希望有人先聽我說完</button>
+              <button class="chat-option wish-option" data-wish="其他原因（我想自己說）" type="button"><span class="radio"></span>其他原因（我想自己說）</button>
+            </div>
+          </div>
+          <div class="chat-compose">
+            <div class="chat-input-row">
+              <button class="mic-button" id="wishMicButton" type="button" aria-label="語音輸入">
+                <svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 0 0 3-3V7a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 1 1-10 0M12 17v4M9 21h6"/></svg>
+              </button>
+              <input class="chat-input" id="wishInput" placeholder="或是打字告訴我真正的原因..." type="text">
+              <button class="send-button" id="chat4SendButton" type="button" aria-label="送出">
+                <svg viewBox="0 0 24 24"><path d="M4 12h14M12 4l8 8-8 8"/></svg>
+              </button>
+            </div>
+            <p class="chat-helper" id="wishVoiceStatus">如果比較想用說的，也可以直接錄音輸入。</p>
+            <button class="primary-cta gold step-continue" id="wishDoneButton" type="button" disabled>我整理好了，下一步</button>
+          </div>
+        </div>
+      </section>
+
       <section class="screen" data-screen="scale">
         <div class="single-step single-step-gold">
           <div class="ai-question-panel gold-panel">
-            <p class="decide-kicker">DECIDE 3 / 5・AI 會依照你的分數引導下一步</p>
-            <h2 class="title gold center decide-question-title">現在的感覺有幾分？</h2>
-            <p class="decide-question-subtitle">不用想太久，選一個最接近現在身體和心裡的分數。</p>
+            <p class="decide-kicker">DECIDE 5 / 5・最後幫現在的感覺評分</p>
+            <h2 class="title gold center decide-question-title">整理完之後，現在感覺有幾分？</h2>
+            <p class="decide-question-subtitle">選一個最接近現在身體和心裡的分數，AI 會幫你接到 GO 的下一步。</p>
           </div>
           <div class="scale-grid">
             <button class="scale-card" data-scale="1" type="button"><div class="scale-face smile"></div><strong>1</strong><span>很平靜</span></button>
@@ -310,53 +390,9 @@
           </div>
           <div class="ai-note" id="scaleAiNote">
             <label>AI 說</label>
-            <p>選一個最接近現在的分數就好，不需要想很久。</p>
+            <p>你已經把原因整理得更清楚了，現在再看看感覺還有多強。</p>
           </div>
-          <button class="primary-cta gold" id="scaleDoneButton" type="button" disabled>決定了，繼續</button>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="need">
-        <div class="single-step single-step-gold">
-          <div class="ai-question-panel gold-panel">
-            <p class="decide-kicker">DECIDE 4 / 5・AI 會幫你整理現在需要什麼</p>
-            <h2 class="title gold center decide-question-title">現在你最需要什麼？</h2>
-            <p class="decide-question-subtitle">選一個最像你現在需要的支持，這會幫助下一步更適合你。</p>
-          </div>
-          <div class="decision-list">
-            <button class="decision-item" data-need="我需要先安靜一下" type="button"><span class="radio-fill"></span>我需要先安靜一下</button>
-            <button class="decision-item" data-need="我需要有人陪我" type="button"><span class="radio-fill"></span>我需要有人陪我</button>
-            <button class="decision-item" data-need="我需要把事情說清楚" type="button"><span class="radio-fill"></span>我需要把事情說清楚</button>
-            <button class="decision-item" data-need="我需要先離開現場" type="button"><span class="radio-fill"></span>我需要先離開現場</button>
-            <button class="decision-item" data-need="我需要把感覺寫下來" type="button"><span class="radio-fill"></span>我需要把感覺寫下來</button>
-          </div>
-          <div class="ai-note" id="needAiNote">
-            <label>AI 說</label>
-            <p>先知道自己需要什麼，才比較容易選到真的有幫助的行動。</p>
-          </div>
-          <button class="primary-cta gold" id="needDoneButton" type="button" disabled>我知道了，下一步</button>
-        </div>
-      </section>
-
-      <section class="screen" data-screen="wish">
-        <div class="single-step single-step-gold">
-          <div class="ai-question-panel gold-panel">
-            <p class="decide-kicker">DECIDE 5 / 5・AI 會陪你決定下一步方向</p>
-            <h2 class="title gold center decide-question-title">你希望接下來變成什麼樣子？</h2>
-            <p class="decide-question-subtitle">這不是考試，只是幫 AI 知道你想往哪裡前進。</p>
-          </div>
-          <div class="decision-list">
-            <button class="decision-item" data-wish="我想先冷靜下來" type="button"><span class="radio-fill"></span>我想先冷靜下來</button>
-            <button class="decision-item" data-wish="我想被理解" type="button"><span class="radio-fill"></span>我想被理解</button>
-            <button class="decision-item" data-wish="我想重新開始" type="button"><span class="radio-fill"></span>我想重新開始</button>
-            <button class="decision-item" data-wish="我想先不要談這件事" type="button"><span class="radio-fill"></span>我想先不要談這件事</button>
-            <button class="decision-item" data-wish="我想找大人幫忙" type="button"><span class="radio-fill"></span>我想找大人幫忙</button>
-          </div>
-          <div class="ai-note" id="wishAiNote">
-            <label>AI 說</label>
-            <p>你可以先選一個方向，等等我們再把它變成可以做到的小行動。</p>
-          </div>
-          <button class="primary-cta gold" id="wishDoneButton" type="button" disabled>整理好了，去 GO</button>
+          <button class="primary-cta gold" id="scaleDoneButton" type="button" disabled>決定了，去 GO</button>
         </div>
       </section>
 
@@ -455,7 +491,7 @@
     </nav>
   </div>
 
-  <script src="./app.js?v=20260608-decide-v4"></script>
+  <script src="./app.js?v=20260608-decide-chat-v5"></script>
   <script>
     (function () {
       function ready(fn) {
