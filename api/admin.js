@@ -2,7 +2,7 @@ import { ensureSchema, getPool, jsonError } from "./_db.js";
 
 function setHeaders(res, contentType = "application/json; charset=utf-8") {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-password");
   res.setHeader("Content-Type", contentType);
 }
@@ -32,6 +32,12 @@ function csvEscape(value) {
 function toCsv(rows) {
   const headers = [
     "受試者代碼",
+    "使用身份",
+    "性別",
+    "年齡層",
+    "職業",
+    "姓名提供意願",
+    "姓名或代號",
     "開始時間",
     "完成時間",
     "完成狀態",
@@ -57,6 +63,12 @@ function toCsv(rows) {
   for (const row of rows) {
     lines.push([
       row.participantLabel,
+      row.participantType,
+      row.gender,
+      row.ageGroup,
+      row.occupation,
+      row.nameConsent,
+      row.providedName,
       row.startedAt,
       row.completedAt,
       row.completed ? "完成" : "進行中",
@@ -146,10 +158,18 @@ function safePayload(payload) {
 }
 
 function summarizeSession(session, events, index) {
+  const metadata = safePayload(session.metadata);
+  const profile = safePayload(metadata.testerProfile);
   const summary = {
     id: session.id,
     participantId: session.participant_id || "",
     participantLabel: session.participant_id || publicSessionId(index),
+    participantType: metadata.participantType === "tester" ? "測試者" : "學生",
+    gender: profile.gender || "",
+    ageGroup: profile.ageGroup || "",
+    occupation: profile.occupation || "",
+    nameConsent: profile.nameConsent || "",
+    providedName: profile.name || "",
     startedAt: session.started_at,
     completedAt: session.completed_at || "",
     completed: Boolean(session.completed_at),
@@ -314,16 +334,71 @@ async function getSummary(db) {
   };
 }
 
+async function deleteSession(db, sessionId) {
+  const result = await db.query(
+    "delete from research_sessions where id = $1 returning id",
+    [sessionId]
+  );
+  return result.rowCount || 0;
+}
+
+async function deleteEmptySessions(db) {
+  const result = await db.query(`
+    delete from research_sessions session
+    where session.completed_at is null
+      and not exists (
+        select 1
+        from research_events event
+        where event.session_id = session.id
+          and (
+            event.event_type = 'ai_guidance'
+            or event.event_type = 'decide_answered'
+            or (event.event_type = 'emotion_selected' and event.step in ('home', 'post_breathing'))
+          )
+      )
+  `);
+  return result.rowCount || 0;
+}
+
+async function deleteAllSessions(db) {
+  const result = await db.query("delete from research_sessions");
+  return result.rowCount || 0;
+}
+
 export default async function handler(req, res) {
   setHeaders(res);
 
   if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "GET") return jsonError(res, 405, "Method not allowed");
+  if (req.method !== "GET" && req.method !== "DELETE") return jsonError(res, 405, "Method not allowed");
   if (!requireAdmin(req, res)) return;
 
   try {
     await ensureSchema();
     const db = getPool();
+
+    if (req.method === "DELETE") {
+      const scope = String(req.query.scope || "one");
+
+      if (scope === "one") {
+        const sessionId = String(req.query.sessionId || "");
+        if (!sessionId) return jsonError(res, 400, "Missing sessionId");
+        const deleted = await deleteSession(db, sessionId);
+        return res.status(200).json({ ok: true, deleted });
+      }
+
+      if (scope === "empty") {
+        const deleted = await deleteEmptySessions(db);
+        return res.status(200).json({ ok: true, deleted });
+      }
+
+      if (scope === "all") {
+        const deleted = await deleteAllSessions(db);
+        return res.status(200).json({ ok: true, deleted });
+      }
+
+      return jsonError(res, 400, "Unknown delete scope");
+    }
+
     const view = req.query.view || "summary";
 
     if (view === "summary") {
