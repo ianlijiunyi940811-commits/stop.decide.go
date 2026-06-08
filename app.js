@@ -11,6 +11,7 @@ var state = {
 };
 
 var researchSessionId = getOrCreateSessionId();
+var researchStarted = false;
 
 function getOrCreateSessionId() {
   var key = "sdg_research_session_id";
@@ -48,7 +49,20 @@ function sendResearch(action, data) {
   }).catch(function () {});
 }
 
+function startResearchSession() {
+  if (researchStarted) return;
+  researchStarted = true;
+  sendResearch("start", {
+    participantId: "",
+    metadata: {
+      appVersion: "decide-chat-v5",
+      startedFrom: window.location.pathname || "/"
+    }
+  });
+}
+
 function trackEvent(eventType, step, value, payload) {
+  startResearchSession();
   sendResearch("event", {
     eventType: eventType,
     step: step || "",
@@ -907,13 +921,6 @@ function setupVoiceInput(buttonId, inputId, statusId, idleMessage) {
 }
 
 function init() {
-  sendResearch("start", {
-    participantId: "",
-    metadata: {
-      appVersion: "admin-v1",
-      startedFrom: window.location.pathname || "/"
-    }
-  });
   bindHome();
   bindEmotionCheck();
   bindChoiceList(".chat-option[data-trigger]", "trigger", "trigger", "triggerInput", "triggerVoiceStatus");
