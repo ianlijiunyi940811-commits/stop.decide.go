@@ -1,5 +1,6 @@
 var passwordKey = "sdg_admin_password";
 var latestRows = [];
+var selectedSession = null;
 
 function byId(id) {
   return document.getElementById(id);
@@ -52,6 +53,24 @@ function apiGet(view, params) {
       });
     }
     return response.json();
+  });
+}
+
+function apiDelete(params) {
+  var query = new URLSearchParams(params || {});
+
+  return fetch("/api/admin?" + query.toString(), {
+    method: "DELETE",
+    headers: {
+      "x-admin-password": getPassword()
+    }
+  }).then(function (response) {
+    return response.json().catch(function () {
+      return { error: "刪除失敗" };
+    }).then(function (body) {
+      if (!response.ok) throw new Error(body.error || "刪除失敗");
+      return body;
+    });
   });
 }
 
@@ -142,6 +161,8 @@ function renderRecentSessions(rows) {
 
   if (!latestRows.length) {
     tbody.innerHTML = '<tr><td colspan="6">目前還沒有受試者資料。請先完成一次前台流程。</td></tr>';
+    selectedSession = null;
+    byId("deleteSelectedButton").hidden = true;
     return;
   }
 
@@ -167,6 +188,12 @@ function renderRecentSessions(rows) {
 
 function renderFlowSection(row) {
   var items = [
+    ["使用身份", row.participantType],
+    ["性別", row.gender],
+    ["年齡層", row.ageGroup],
+    ["職業", row.occupation],
+    ["姓名提供意願", row.nameConsent],
+    ["姓名或代號", row.providedName],
     ["初始情緒", row.homeEmotion],
     ["STOP 呼吸後情緒", row.postBreathingEmotion],
     ["情緒是否改善", row.emotionImproved],
@@ -213,6 +240,8 @@ function renderTimeline(row) {
 }
 
 function renderSessionDetail(row) {
+  selectedSession = row;
+  byId("deleteSelectedButton").hidden = false;
   byId("detailSubtitle").textContent =
     row.participantLabel + "｜" + formatDate(row.startedAt) + "｜AI 回覆 " + row.aiReplyCount + " 次";
 
@@ -233,9 +262,64 @@ function loadSummary() {
     renderCharts(data.charts || {});
     renderRecentSessions(data.recentSessions || []);
     byId("loginStatus").textContent = "已連線到研究後台。";
-    if ((data.recentSessions || []).length) renderSessionDetail(data.recentSessions[0]);
+    if ((data.recentSessions || []).length) {
+      renderSessionDetail(data.recentSessions[0]);
+    } else {
+      selectedSession = null;
+      byId("deleteSelectedButton").hidden = true;
+      byId("detailSubtitle").textContent = "尚未選擇受試者";
+      byId("sessionDetail").textContent = "目前沒有可顯示的資料。";
+    }
   }).catch(function (error) {
     setVisible(false);
+    byId("loginStatus").textContent = error.message;
+  });
+}
+
+function requireTypedConfirmation(message, expectedText) {
+  if (!window.confirm(message)) return false;
+  var typed = window.prompt("第二次確認：請輸入「" + expectedText + "」才會執行。");
+  return typed === expectedText;
+}
+
+function deleteSelectedSession() {
+  if (!selectedSession || !selectedSession.id) {
+    byId("loginStatus").textContent = "請先選擇一筆資料。";
+    return;
+  }
+
+  var label = selectedSession.participantLabel || "這筆資料";
+  if (!requireTypedConfirmation("確定要刪除「" + label + "」嗎？這個動作無法復原。", "刪除")) return;
+
+  byId("loginStatus").textContent = "正在刪除「" + label + "」...";
+  apiDelete({ scope: "one", sessionId: selectedSession.id }).then(function (response) {
+    byId("loginStatus").textContent = "已刪除 " + Number(response.deleted || 0) + " 筆資料。";
+    return loadSummary();
+  }).catch(function (error) {
+    byId("loginStatus").textContent = error.message;
+  });
+}
+
+function deleteEmptySessions() {
+  if (!requireTypedConfirmation("確定要清除空白資料嗎？系統會移除沒有情緒、DECIDE 或 AI 回覆紀錄的 session。", "清除空白")) return;
+
+  byId("loginStatus").textContent = "正在清除空白資料...";
+  apiDelete({ scope: "empty" }).then(function (response) {
+    byId("loginStatus").textContent = "已清除 " + Number(response.deleted || 0) + " 筆空白資料。";
+    return loadSummary();
+  }).catch(function (error) {
+    byId("loginStatus").textContent = error.message;
+  });
+}
+
+function deleteAllSessions() {
+  if (!requireTypedConfirmation("確定要刪除所有研究資料嗎？所有 session 與流程事件都會被永久移除。", "全部刪除")) return;
+
+  byId("loginStatus").textContent = "正在刪除所有資料...";
+  apiDelete({ scope: "all" }).then(function (response) {
+    byId("loginStatus").textContent = "已刪除 " + Number(response.deleted || 0) + " 筆資料。";
+    return loadSummary();
+  }).catch(function (error) {
     byId("loginStatus").textContent = error.message;
   });
 }
@@ -267,6 +351,9 @@ byId("loginForm").addEventListener("submit", function (event) {
 
 byId("refreshButton").addEventListener("click", loadSummary);
 byId("exportButton").addEventListener("click", exportCsv);
+byId("deleteEmptyButton").addEventListener("click", deleteEmptySessions);
+byId("deleteAllButton").addEventListener("click", deleteAllSessions);
+byId("deleteSelectedButton").addEventListener("click", deleteSelectedSession);
 byId("logoutButton").addEventListener("click", function () {
   sessionStorage.removeItem(passwordKey);
   byId("adminPassword").value = "";
