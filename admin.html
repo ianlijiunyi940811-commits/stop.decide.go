@@ -30,6 +30,8 @@
     <section class="toolbar" id="toolbar" hidden>
       <button id="refreshButton" type="button">重新整理</button>
       <button id="exportButton" type="button">匯出流程 CSV</button>
+      <button id="deleteEmptyButton" class="danger-soft" type="button">清除空白資料</button>
+      <button id="deleteAllButton" class="danger" type="button">刪除所有資料</button>
       <button id="logoutButton" type="button">登出</button>
     </section>
 
@@ -108,14 +110,17 @@
 
       <article class="panel detail-panel">
         <div class="panel-heading">
-          <h2>完整個案紀錄</h2>
-          <span id="detailSubtitle">尚未選擇受試者</span>
+          <div>
+            <h2>完整個案紀錄</h2>
+            <span id="detailSubtitle">尚未選擇受試者</span>
+          </div>
+          <button id="deleteSelectedButton" class="danger-soft small-action" type="button" hidden>刪除此筆資料</button>
         </div>
         <div id="sessionDetail" class="detail-box">請從左側受試者流程紀錄選擇一筆資料。</div>
       </article>
     </section>
   </main>
 
-  <script src="./admin.js?v=20260608-research-v2"></script>
+  <script src="./admin.js?v=20260609-delete-tools-v1"></script>
 </body>
 </html>
