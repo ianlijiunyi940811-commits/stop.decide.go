@@ -173,8 +173,8 @@ function renderFlowSection(row) {
     ["DECIDE 衝突原因", row.trigger],
     ["DECIDE 身體感受", row.body],
     ["DECIDE 強度分數", row.scale ? row.scale + " 分" : ""],
-    ["DECIDE 現在需要", row.need],
-    ["DECIDE 希望方向", row.wish],
+    ["DECIDE 情緒背後想法", row.need],
+    ["DECIDE 深層在意原因", row.wish],
     ["GO 行動選擇", row.action],
     ["完成後感覺", row.feedback]
   ];
