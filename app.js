@@ -475,8 +475,14 @@ function getAiGuidance(step, input) {
     body: JSON.stringify(buildPayload(step, value))
   })
     .then(function (response) {
-      if (!response.ok) throw new Error("DECIDE API failed");
-      return response.json();
+      return response.json().catch(function () {
+        return { error: "Invalid API response" };
+      }).then(function (data) {
+        if (!response.ok) {
+          throw new Error(data.error || data.detail || "DECIDE API failed");
+        }
+        return data;
+      });
     })
     .then(function (data) {
       if (data && data.result && data.result.acknowledgement) {
@@ -485,8 +491,11 @@ function getAiGuidance(step, input) {
       }
       return getFallbackReply(step, value);
     })
-    .catch(function () {
-      return getFallbackReply(step, value);
+    .catch(function (error) {
+      var reply = getFallbackReply(step, value);
+      reply.source = "fallback";
+      reply.error = error && error.message ? error.message : "DECIDE API failed";
+      return reply;
     });
 }
 
