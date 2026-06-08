@@ -1,4 +1,6 @@
 var state = {
+  participantType: "",
+  testerProfile: {},
   homeEmotion: "",
   postBreathingEmotion: "",
   trigger: "",
@@ -53,9 +55,11 @@ function startResearchSession() {
   if (researchStarted) return;
   researchStarted = true;
   sendResearch("start", {
-    participantId: "",
+    participantId: state.testerProfile.name || "",
     metadata: {
-      appVersion: "decide-chat-v5",
+      appVersion: "entry-profile-v1",
+      participantType: state.participantType || "student",
+      testerProfile: state.testerProfile || {},
       startedFrom: window.location.pathname || "/"
     }
   });
@@ -68,6 +72,8 @@ function trackEvent(eventType, step, value, payload) {
     step: step || "",
     value: value || "",
     payload: Object.assign({
+      participantType: state.participantType,
+      testerProfile: state.testerProfile,
       homeEmotion: state.homeEmotion,
       postBreathingEmotion: state.postBreathingEmotion,
       trigger: state.trigger,
@@ -81,7 +87,18 @@ function trackEvent(eventType, step, value, payload) {
   });
 }
 
+function recordParticipantProfile(type, profile) {
+  state.participantType = type;
+  state.testerProfile = profile || {};
+  startResearchSession();
+  trackEvent("participant_profile", "entry", type, {
+    participantType: state.participantType,
+    testerProfile: state.testerProfile
+  });
+}
+
 var themeMap = {
+  intro: "neutral",
   home: "neutral",
   breathing: "neutral",
   emotion: "neutral",
@@ -167,7 +184,7 @@ function buildProgressPips(progress) {
 }
 
 function setTopChrome(screenName) {
-  var isHome = screenName === "home" || screenName === "complete";
+  var isHome = screenName === "intro" || screenName === "home" || screenName === "complete";
   var isChat = screenName === "chat1" || screenName === "chat2" || screenName === "need" || screenName === "wish";
   var homeTopNav = byId("homeTopNav");
   var flowNav = byId("flowNav");
@@ -631,6 +648,40 @@ function submitDecideStep(step, input, source) {
   }
 }
 
+function getRadioValue(name) {
+  var selected = document.querySelector('input[name="' + name + '"]:checked');
+  return selected ? selected.value : "";
+}
+
+function bindEntry() {
+  bindButton("studentEntryButton", function () {
+    recordParticipantProfile("student", {});
+    showScreen("home");
+  });
+
+  var form = byId("testerForm");
+  if (!form) return;
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    var profile = {
+      gender: byId("testerGender") ? byId("testerGender").value : "",
+      ageGroup: byId("testerAge") ? byId("testerAge").value : "",
+      occupation: byId("testerOccupation") ? byId("testerOccupation").value : "",
+      nameConsent: getRadioValue("testerNameConsent"),
+      name: byId("testerName") ? normalize(byId("testerName").value) : ""
+    };
+
+    if (profile.nameConsent !== "願意") {
+      profile.name = "";
+    }
+
+    recordParticipantProfile("tester", profile);
+    showScreen("home");
+  });
+}
+
 function bindHome() {
   all("[data-emotion]").forEach(function (card) {
     card.addEventListener("click", function () {
@@ -837,6 +888,8 @@ function bindStaticFlow() {
     setText("completionSummary", "你今天先選了「" + (state.action || "一個小行動") + "」，最後感覺是「" + (state.feedback || "完成練習") + "」。老師和爸媽將收到今天的練習摘要。");
     sendResearch("complete", {
       metadata: {
+        participantType: state.participantType,
+        testerProfile: state.testerProfile,
         homeEmotion: state.homeEmotion,
         postBreathingEmotion: state.postBreathingEmotion,
         trigger: state.trigger,
@@ -921,6 +974,7 @@ function setupVoiceInput(buttonId, inputId, statusId, idleMessage) {
 }
 
 function init() {
+  bindEntry();
   bindHome();
   bindEmotionCheck();
   bindChoiceList(".chat-option[data-trigger]", "trigger", "trigger", "triggerInput", "triggerVoiceStatus");
@@ -939,7 +993,7 @@ function init() {
   setupVoiceInput("bodyMicButton", "bodyInput", "bodyVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。");
   setupVoiceInput("needMicButton", "needInput", "needVoiceStatus", "也可以按左邊麥克風說出來。");
   setupVoiceInput("wishMicButton", "wishInput", "wishVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。");
-  showScreen("home");
+  showScreen("intro");
 }
 
 if (document.readyState === "loading") {
