@@ -154,7 +154,7 @@ function buildProgressPips(progress) {
 
 function setTopChrome(screenName) {
   var isHome = screenName === "home" || screenName === "complete";
-  var isChat = screenName === "chat1" || screenName === "chat2";
+  var isChat = screenName === "chat1" || screenName === "chat2" || screenName === "need" || screenName === "wish";
   var homeTopNav = byId("homeTopNav");
   var flowNav = byId("flowNav");
   var chatHeader = byId("chatHeader");
@@ -310,55 +310,55 @@ function scaleFallback(input) {
 }
 
 function needFallback(input) {
-  if (includesText(input, "安靜")) {
+  if (includesText(input, "針對") || includesText(input, "不公平")) {
     return {
-      acknowledgement: "你發現自己需要安靜一下，這是很好的自我照顧。",
-      supportiveLine: "先讓身體有一點空間，情緒會比較容易慢慢降下來。",
-      transition: "接下來我們想一想，你希望事情往哪個方向走？",
+      acknowledgement: "你提到「" + input + "」，這聽起來真的會讓人很委屈或生氣。",
+      supportiveLine: "當心裡覺得不公平時，情緒變強是很自然的。",
+      transition: "我們再看看，這件事最讓你在意的是哪一個地方？",
       riskLevel: "low"
     };
   }
 
-  if (includesText(input, "陪")) {
+  if (includesText(input, "理解") || includesText(input, "沒有人")) {
     return {
-      acknowledgement: "你想要有人陪，代表你知道自己不必一個人撐著。",
-      supportiveLine: "找一個安全的大人或信任的人，是很勇敢的選擇。",
-      transition: "接下來我們看看，你希望接下來變成什麼樣子？",
+      acknowledgement: "你說到「" + input + "」，這可能代表你很希望有人真的聽懂你。",
+      supportiveLine: "想被理解不是任性，而是很重要的需要。",
+      transition: "我們再找找，這件事真正卡住你的地方是什麼？",
       riskLevel: "low"
     };
   }
 
   return {
-    acknowledgement: "你正在把自己的需要說清楚，這很重要。",
-    supportiveLine: "知道需要什麼，會讓下一步比較不慌。",
-    transition: "接下來我們看看，你希望事情往哪個方向變好？",
+    acknowledgement: "你剛剛說「" + input + "」，AI 有聽見你在努力把心裡的想法說出來。",
+    supportiveLine: "把想法說清楚，可以幫我們更了解情緒是從哪裡來的。",
+    transition: "接下來我們再看看，這件事最讓你在意的是什麼？",
     riskLevel: "low"
   };
 }
 
 function wishFallback(input) {
-  if (includesText(input, "冷靜")) {
+  if (includesText(input, "尊重") || includesText(input, "看見")) {
     return {
-      acknowledgement: "你想先冷靜下來，這是一個很穩的方向。",
-      supportiveLine: "我們先不用急著解決全部，只要做一件能讓你穩一點的小事。",
-      transition: "現在選一個最做得到的 GO 行動吧。",
+      acknowledgement: "你提到「" + input + "」，這表示你很在意自己有沒有被好好對待。",
+      supportiveLine: "這個原因很重要，因為它讓我們更懂你的情緒不是突然來的。",
+      transition: "最後我們用 1 到 5 分看看，整理完後現在還有幾分？",
       riskLevel: "low"
     };
   }
 
-  if (includesText(input, "理解") || includesText(input, "幫忙")) {
+  if (includesText(input, "責怪") || includesText(input, "說清楚")) {
     return {
-      acknowledgement: "你希望被理解或有人幫忙，這個需要很合理。",
-      supportiveLine: "讓安全的大人知道你的狀況，可以讓事情比較不孤單。",
-      transition: "現在選一個最適合你的 GO 行動吧。",
+      acknowledgement: "你說「" + input + "」，聽起來你很怕事情被誤會，或自己沒有機會說清楚。",
+      supportiveLine: "能把這個原因說出來，已經是在幫自己整理了。",
+      transition: "最後我們用 1 到 5 分看看，現在感覺還有多強？",
       riskLevel: "low"
     };
   }
 
   return {
-    acknowledgement: "你已經想出一個希望前進的方向了。",
-    supportiveLine: "接下來不用做很大的事，只要做一個小小的下一步。",
-    transition: "現在選一個可以開始的 GO 行動吧。",
+    acknowledgement: "你剛剛說「" + input + "」，這讓 AI 更知道你真正卡住的地方。",
+    supportiveLine: "原因被看見之後，我們就比較能選對下一步。",
+    transition: "最後我們用 1 到 5 分看看，現在的感覺有幾分？",
     riskLevel: "low"
   };
 }
@@ -544,6 +544,7 @@ function submitDecideStep(step, input, source) {
 
   if (step === "body") {
     state.body = value;
+    setText("selectedBodyText", value);
     renderThinking("bodyResponseArea");
     trackEvent("decide_answered", "body", value, { source: source });
     getAiGuidance("body", value).then(function (reply) {
@@ -558,6 +559,50 @@ function submitDecideStep(step, input, source) {
       setText("bodyLeadMessage", "謝謝你把身體的感覺說出來，AI 會陪你把它整理成下一步。");
       if (source !== "choice") resetSelected(".chat-option[data-body]");
       var inputNode = byId("bodyInput");
+      if (inputNode) inputNode.value = "";
+    });
+    return;
+  }
+
+  if (step === "need" || step === "wish") {
+    var config = step === "need"
+      ? {
+          stateKey: "need",
+          responseId: "needResponseArea",
+          continueId: "needDoneButton",
+          inputId: "needInput",
+          selectedTextId: "selectedNeedText",
+          nextLeadId: "needLeadMessage",
+          nextLeadText: "謝謝你把心裡的想法說出來。AI 會陪你再找找更深一點的原因。",
+          selector: ".chat-option[data-need]"
+        }
+      : {
+          stateKey: "wish",
+          responseId: "wishResponseArea",
+          continueId: "wishDoneButton",
+          inputId: "wishInput",
+          selectedTextId: "",
+          nextLeadId: "wishLeadMessage",
+          nextLeadText: "你已經把真正卡住的地方說得更清楚了。最後我們幫現在的感覺評分。",
+          selector: ".chat-option[data-wish]"
+        };
+
+    state[config.stateKey] = value;
+    if (config.selectedTextId) setText(config.selectedTextId, value);
+    renderThinking(config.responseId);
+    trackEvent("decide_answered", step, value, { source: source });
+    getAiGuidance(step, value).then(function (reply) {
+      trackEvent("ai_guidance", step, reply.riskLevel || "low", {
+        acknowledgement: reply.acknowledgement,
+        supportiveLine: reply.supportiveLine,
+        transition: reply.transition,
+        source: reply.source || "fallback"
+      });
+      renderConversation(config.responseId, value, reply);
+      setDisabled(config.continueId, false);
+      setText(config.nextLeadId, config.nextLeadText);
+      if (source !== "choice") resetSelected(config.selector);
+      var inputNode = byId(config.inputId);
       if (inputNode) inputNode.value = "";
     });
   }
@@ -748,10 +793,10 @@ function bindStaticFlow() {
     showScreen("chat1");
   });
   bindButton("chat1ContinueButton", function () { showScreen("chat2"); });
-  bindButton("chat2ContinueButton", function () { showScreen("scale"); });
+  bindButton("chat2ContinueButton", function () { showScreen("need"); });
   bindButton("scaleDoneButton", function () {
     trackEvent("step_completed", "scale", state.scale);
-    showScreen("need");
+    showScreen("action");
   });
   bindButton("needDoneButton", function () {
     trackEvent("step_completed", "need", state.need);
@@ -759,7 +804,7 @@ function bindStaticFlow() {
   });
   bindButton("wishDoneButton", function () {
     trackEvent("step_completed", "wish", state.wish);
-    showScreen("action");
+    showScreen("scale");
   });
   bindButton("actionDoneButton", function () {
     trackEvent("step_completed", "action", state.action);
@@ -791,6 +836,14 @@ function bindStaticFlow() {
   bindButton("chat2SendButton", function () {
     var input = byId("bodyInput");
     submitDecideStep("body", input ? input.value : "", "typed");
+  });
+  bindButton("chat3SendButton", function () {
+    var input = byId("needInput");
+    submitDecideStep("need", input ? input.value : "", "typed");
+  });
+  bindButton("chat4SendButton", function () {
+    var input = byId("wishInput");
+    submitDecideStep("wish", input ? input.value : "", "typed");
   });
 }
 
@@ -856,16 +909,20 @@ function init() {
   bindEmotionCheck();
   bindChoiceList(".chat-option[data-trigger]", "trigger", "trigger", "triggerInput", "triggerVoiceStatus");
   bindChoiceList(".chat-option[data-body]", "body", "body", "bodyInput", "bodyVoiceStatus");
+  bindChoiceList(".chat-option[data-need]", "need", "need", "needInput", "needVoiceStatus");
+  bindChoiceList(".chat-option[data-wish]", "wish", "wish", "wishInput", "wishVoiceStatus");
   bindScale();
-  bindDecisionItems(".decision-item[data-need]", "need", "need", "needAiNote", "needDoneButton");
-  bindDecisionItems(".decision-item[data-wish]", "wish", "wish", "wishAiNote", "wishDoneButton");
   bindActions();
   bindFeedback();
   bindStaticFlow();
   bindEnterSubmit("triggerInput", "trigger");
   bindEnterSubmit("bodyInput", "body");
+  bindEnterSubmit("needInput", "need");
+  bindEnterSubmit("wishInput", "wish");
   setupVoiceInput("triggerMicButton", "triggerInput", "triggerVoiceStatus", "也可以按左邊麥克風說出來。");
   setupVoiceInput("bodyMicButton", "bodyInput", "bodyVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。");
+  setupVoiceInput("needMicButton", "needInput", "needVoiceStatus", "也可以按左邊麥克風說出來。");
+  setupVoiceInput("wishMicButton", "wishInput", "wishVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。");
   showScreen("home");
 }
 
