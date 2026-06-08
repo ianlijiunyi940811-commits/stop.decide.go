@@ -9,7 +9,15 @@ const STEP_CONFIG = {
   },
   scale: {
     goal: "Respond to the child's current intensity score without labeling it as good or bad.",
-    transition: "Ask the child to choose one small next action."
+    transition: "Ask what kind of support the child needs right now."
+  },
+  need: {
+    goal: "Respond to what the child says they need right now. Help them feel that the need is valid and manageable.",
+    transition: "Ask what the child hopes can happen next."
+  },
+  wish: {
+    goal: "Respond to the child's preferred direction for what should happen next.",
+    transition: "Invite the child to choose one small doable GO action."
   },
   action: {
     goal: "Support the child's chosen action and encourage one small doable step.",
@@ -56,6 +64,8 @@ Session context:
 - trigger: ${context.trigger || "none"}
 - body: ${context.body || "none"}
 - scale: ${context.scale || "none"}
+- need: ${context.need || "none"}
+- wish: ${context.wish || "none"}
 - action: ${context.action || "none"}
 - feedback: ${context.feedback || "none"}
 
