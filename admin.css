@@ -97,6 +97,22 @@ button:hover {
   filter: brightness(1.05);
 }
 
+button.danger {
+  background: var(--warm);
+}
+
+button.danger-soft {
+  background: #fff4ef;
+  color: var(--warm);
+  border: 1px solid #efb8a8;
+}
+
+button.small-action {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
 .login-card small {
   display: block;
   margin-top: 10px;
@@ -114,7 +130,7 @@ button:hover {
   background: var(--green);
 }
 
-.toolbar button:nth-child(3) {
+.toolbar button:last-child {
   background: transparent;
   color: var(--text);
   border: 1px solid var(--line);
@@ -166,6 +182,13 @@ button:hover {
 
 .panel-heading {
   margin-bottom: 16px;
+}
+
+.detail-panel .panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
 }
 
 .panel-heading h2,
