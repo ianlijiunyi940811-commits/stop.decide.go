@@ -52,7 +52,78 @@
     </div>
 
     <main class="screen-wrap">
-      <section class="screen active" data-screen="home">
+      <section class="screen active" data-screen="intro">
+        <div class="entry-screen">
+          <div class="entry-hero">
+            <span class="entry-kicker">Stop・Decide・Go</span>
+            <h1>準備開始自我調節練習</h1>
+            <p>先選擇你的使用身份，我們會用適合的方式記錄這次練習。</p>
+          </div>
+
+          <div class="entry-grid">
+            <button class="entry-card" id="studentEntryButton" type="button">
+              <span class="entry-icon">01</span>
+              <strong>我是學生</strong>
+              <small>直接進入自我調節遊戲</small>
+            </button>
+
+            <div class="entry-card tester-card">
+              <span class="entry-icon">02</span>
+              <strong>我是測試者</strong>
+              <small>先填寫基本資料，再開始流程</small>
+
+              <form class="tester-form" id="testerForm">
+                <label>
+                  性別
+                  <select id="testerGender" required>
+                    <option value="">請選擇</option>
+                    <option value="男生">男生</option>
+                    <option value="女生">女生</option>
+                  </select>
+                </label>
+
+                <label>
+                  年齡
+                  <select id="testerAge" required>
+                    <option value="">請選擇</option>
+                    <option value="6-8歲">6-8 歲</option>
+                    <option value="9-12歲">9-12 歲</option>
+                    <option value="13-15歲">13-15 歲</option>
+                    <option value="16-18歲">16-18 歲</option>
+                    <option value="19歲以上">19 歲以上</option>
+                  </select>
+                </label>
+
+                <label>
+                  職業
+                  <select id="testerOccupation" required>
+                    <option value="">請選擇</option>
+                    <option value="教師">教師</option>
+                    <option value="學生">學生</option>
+                    <option value="輔導師">輔導師</option>
+                    <option value="其他">其他</option>
+                  </select>
+                </label>
+
+                <fieldset>
+                  <legend>是否願意提供姓名</legend>
+                  <label class="radio-line"><input name="testerNameConsent" type="radio" value="願意" required> 願意</label>
+                  <label class="radio-line"><input name="testerNameConsent" type="radio" value="不願意"> 不願意</label>
+                </fieldset>
+
+                <label>
+                  姓名或代號
+                  <input id="testerName" type="text" placeholder="若願意可填寫，否則可留空">
+                </label>
+
+                <button class="primary-cta warm entry-submit" type="submit">完成，開始遊戲</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="home">
         <div class="home-screen">
           <h1>今天感覺如何？</h1>
           <p>選一個，我們一起來處理</p>
@@ -491,41 +562,6 @@
     </nav>
   </div>
 
-  <script src="./app.js?v=20260608-decide-chat-v5"></script>
-  <script>
-    (function () {
-      function ready(fn) {
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", fn);
-        } else {
-          fn();
-        }
-      }
-
-      ready(function () {
-        var cards = Array.prototype.slice.call(document.querySelectorAll("[data-emotion]"));
-        var start = document.getElementById("startFlowButton");
-
-        cards.forEach(function (card) {
-          card.addEventListener("click", function () {
-            cards.forEach(function (item) {
-              item.classList.remove("is-selected");
-            });
-            card.classList.add("is-selected");
-            if (start) start.disabled = false;
-          });
-        });
-
-        if (start) {
-          start.addEventListener("click", function () {
-            if (start.disabled) return;
-            Array.prototype.slice.call(document.querySelectorAll(".screen")).forEach(function (screen) {
-              screen.classList.toggle("active", screen.dataset.screen === "breathing");
-            });
-          });
-        }
-      });
-    })();
-  </script>
+  <script src="./app.js?v=20260608-entry-profile-v1"></script>
 </body>
 </html>
