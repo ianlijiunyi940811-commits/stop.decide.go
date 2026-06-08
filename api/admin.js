@@ -42,6 +42,8 @@ function toCsv(rows) {
     "衝突原因",
     "身體感受",
     "強度分數",
+    "現在需要",
+    "希望方向",
     "GO行動選擇",
     "完成後感覺",
     "AI回覆次數",
@@ -65,6 +67,8 @@ function toCsv(rows) {
       row.trigger,
       row.body,
       row.scale,
+      row.need,
+      row.wish,
       row.action,
       row.feedback,
       row.aiReplyCount,
@@ -115,6 +119,8 @@ function labelStep(step) {
     trigger: "DECIDE 衝突原因",
     body: "DECIDE 身體感受",
     scale: "DECIDE 強度分數",
+    need: "DECIDE 現在需要",
+    wish: "DECIDE 希望方向",
     action: "GO 行動選擇",
     feedback: "GO 完成後感覺",
     complete: "完成"
@@ -155,6 +161,8 @@ function summarizeSession(session, events, index) {
     trigger: "",
     body: "",
     scale: "",
+    need: "",
+    wish: "",
     action: "",
     feedback: "",
     aiReplyCount: 0,
@@ -181,6 +189,8 @@ function summarizeSession(session, events, index) {
       if (event.step === "trigger") summary.trigger = event.value || "";
       if (event.step === "body") summary.body = event.value || "";
       if (event.step === "scale") summary.scale = event.value || "";
+      if (event.step === "need") summary.need = event.value || "";
+      if (event.step === "wish") summary.wish = event.value || "";
       if (event.step === "action") summary.action = event.value || "";
       if (event.step === "feedback") summary.feedback = event.value || "";
     }
