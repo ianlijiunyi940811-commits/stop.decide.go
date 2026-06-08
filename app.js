@@ -617,9 +617,24 @@ function bindButton(id, handler) {
   if (button) button.addEventListener("click", handler);
 }
 
+function openArModule(path) {
+  var url = new URL(path, window.location.href).href;
+  var opened = null;
+
+  try {
+    opened = window.open(url, "_blank");
+  } catch (error) {
+    opened = null;
+  }
+
+  if (!opened) {
+    window.location.href = url;
+  }
+}
+
 function bindStaticFlow() {
   bindButton("startBreathingArButton", function () {
-    window.open("./modules/ar-ball/index.html", "_blank", "noopener,noreferrer");
+    openArModule("./modules/ar-ball/index.html");
     setText("startBreathingArButton", "已開啟 AR，完成後回來");
     setDisabled("breathingDoneButton", false);
     trackEvent("ar_started", "breathing", "ar-ball");
@@ -635,7 +650,7 @@ function bindStaticFlow() {
   });
 
   bindButton("startGroundingArButton", function () {
-    window.open("./modules/ar-grounding/index.html", "_blank", "noopener,noreferrer");
+    openArModule("./modules/ar-grounding/index.html");
     setText("startGroundingArButton", "已開啟 AR，完成後回來");
     setDisabled("groundingDoneButton", false);
     trackEvent("ar_started", "grounding", "ar-grounding");
@@ -751,4 +766,12 @@ function init() {
   bindEnterSubmit("triggerInput", "trigger");
   bindEnterSubmit("bodyInput", "body");
   setupVoiceInput("triggerMicButton", "triggerInput", "triggerVoiceStatus", "也可以按左邊麥克風說出來。");
-  setupVoiceInput("bodyMicButton", "bodyInput", "bodyVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。
+  setupVoiceInput("bodyMicButton", "bodyInput", "bodyVoiceStatus", "如果比較想用說的，也可以直接錄音輸入。");
+  showScreen("home");
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
