@@ -38,12 +38,12 @@ function toCsv(rows) {
     "使用分鐘",
     "初始情緒",
     "呼吸後情緒",
-    "是否改善",
+    "情緒是否改善",
     "衝突原因",
     "身體感受",
-    "強度分數",
     "情緒背後想法",
     "深層在意原因",
+    "整理後強度分數",
     "GO行動選擇",
     "完成後感覺",
     "AI回覆次數",
@@ -66,9 +66,9 @@ function toCsv(rows) {
       row.emotionImproved,
       row.trigger,
       row.body,
-      row.scale,
       row.need,
       row.wish,
+      row.scale,
       row.action,
       row.feedback,
       row.aiReplyCount,
@@ -113,14 +113,14 @@ function labelStep(step) {
   const labels = {
     home: "初始情緒",
     breathing: "STOP 呼吸",
-    post_breathing: "呼吸後情緒",
+    post_breathing: "STOP 呼吸後情緒",
     emotion: "情緒確認",
     grounding: "STOP 接地",
     trigger: "DECIDE 衝突原因",
     body: "DECIDE 身體感受",
-    scale: "DECIDE 強度分數",
     need: "DECIDE 情緒背後想法",
     wish: "DECIDE 深層在意原因",
+    scale: "DECIDE 整理後強度",
     action: "GO 行動選擇",
     feedback: "GO 完成後感覺",
     complete: "完成"
@@ -160,9 +160,9 @@ function summarizeSession(session, events, index) {
     emotionImproved: "資料不足",
     trigger: "",
     body: "",
-    scale: "",
     need: "",
     wish: "",
+    scale: "",
     action: "",
     feedback: "",
     aiReplyCount: 0,
@@ -188,9 +188,9 @@ function summarizeSession(session, events, index) {
     if (event.event_type === "decide_answered") {
       if (event.step === "trigger") summary.trigger = event.value || "";
       if (event.step === "body") summary.body = event.value || "";
-      if (event.step === "scale") summary.scale = event.value || "";
       if (event.step === "need") summary.need = event.value || "";
       if (event.step === "wish") summary.wish = event.value || "";
+      if (event.step === "scale") summary.scale = event.value || "";
       if (event.step === "action") summary.action = event.value || "";
       if (event.step === "feedback") summary.feedback = event.value || "";
     }
@@ -227,6 +227,22 @@ function summarizeSession(session, events, index) {
   return summary;
 }
 
+function isMeaningfulSession(row) {
+  return Boolean(
+    row.homeEmotion ||
+    row.postBreathingEmotion ||
+    row.trigger ||
+    row.body ||
+    row.need ||
+    row.wish ||
+    row.scale ||
+    row.action ||
+    row.feedback ||
+    row.completed ||
+    row.aiReplyCount > 0
+  );
+}
+
 async function getFlowRows(db, limit = 500) {
   const sessions = await db.query(
     `
@@ -257,7 +273,9 @@ async function getFlowRows(db, limit = 500) {
     grouped.get(event.session_id).push(event);
   }
 
-  return sessions.rows.map((session, index) => summarizeSession(session, grouped.get(session.id) || [], index));
+  return sessions.rows
+    .map((session, index) => summarizeSession(session, grouped.get(session.id) || [], index))
+    .filter(isMeaningfulSession);
 }
 
 function countBy(rows, key) {
@@ -272,7 +290,7 @@ function countBy(rows, key) {
 }
 
 async function getSummary(db) {
-  const rows = await getFlowRows(db, 200);
+  const rows = await getFlowRows(db, 500);
   const now = Date.now();
   const sevenDays = 7 * 24 * 60 * 60 * 1000;
   const completed = rows.filter((row) => row.completed).length;
@@ -313,13 +331,13 @@ export default async function handler(req, res) {
     }
 
     if (view === "flows") {
-      return res.status(200).json({ ok: true, data: await getFlowRows(db, 500) });
+      return res.status(200).json({ ok: true, data: await getFlowRows(db, 1000) });
     }
 
     if (view === "flow") {
       const sessionId = String(req.query.sessionId || "");
       if (!sessionId) return jsonError(res, 400, "Missing sessionId");
-      const rows = await getFlowRows(db, 500);
+      const rows = await getFlowRows(db, 1000);
       const row = rows.find((item) => item.id === sessionId);
       return res.status(200).json({ ok: true, data: row || null });
     }
