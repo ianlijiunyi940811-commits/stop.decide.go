@@ -157,6 +157,12 @@ function setHtml(id, html) {
   if (node) node.innerHTML = html;
 }
 
+function setSurveyVisibility() {
+  var card = byId("susSurveyCard");
+  if (!card) return;
+  card.hidden = state.participantType !== "tester";
+}
+
 function setDisabled(id, disabled) {
   var node = byId(id);
   if (node) node.disabled = disabled;
@@ -892,6 +898,7 @@ function bindStaticFlow() {
   });
   bindButton("feedbackDoneButton", function () {
     setText("completionSummary", "你今天先選了「" + (state.action || "一個小行動") + "」，最後感覺是「" + (state.feedback || "完成練習") + "」。老師和爸媽將收到今天的練習摘要。");
+    setSurveyVisibility();
     sendResearch("complete", {
       metadata: {
         participantType: state.participantType,
@@ -909,7 +916,10 @@ function bindStaticFlow() {
     });
     showScreen("complete");
   });
-  bindButton("restartButton", function () { showScreen("home"); });
+  bindButton("restartButton", function () {
+    setSurveyVisibility();
+    showScreen("home");
+  });
   bindButton("closeFlowButton", function () { showScreen("home"); });
   bindButton("chat1SendButton", function () {
     var input = byId("triggerInput");
