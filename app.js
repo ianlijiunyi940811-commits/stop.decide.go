@@ -186,6 +186,7 @@ function buildProgressPips(progress) {
 function setTopChrome(screenName) {
   var isHome = screenName === "intro" || screenName === "home" || screenName === "complete";
   var isChat = screenName === "chat1" || screenName === "chat2" || screenName === "need" || screenName === "wish";
+  var shell = document.querySelector(".app-shell");
   var homeTopNav = byId("homeTopNav");
   var flowNav = byId("flowNav");
   var chatHeader = byId("chatHeader");
@@ -193,6 +194,11 @@ function setTopChrome(screenName) {
   if (homeTopNav) homeTopNav.hidden = !isHome;
   if (flowNav) flowNav.hidden = isHome;
   if (chatHeader) chatHeader.hidden = !isChat;
+  if (shell) {
+    shell.dataset.topNav = isHome ? "visible" : "hidden";
+    shell.dataset.flowNav = isHome ? "hidden" : "visible";
+    shell.dataset.chatHeader = isChat ? "visible" : "hidden";
+  }
 
   if (!isHome && stepMap[screenName]) {
     var step = stepMap[screenName];
