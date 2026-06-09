@@ -52,9 +52,33 @@ button {
   margin: 0 auto;
   background: var(--bg);
   display: grid;
-  grid-template-rows: 40px 76px 100px 84px 1fr 126px;
+  grid-template-rows: 40px var(--top-row, 76px) var(--flow-row, 100px) var(--chat-row, 84px) minmax(0, 1fr) 126px;
   border-radius: 0 0 40px 40px;
   overflow: hidden;
+}
+
+.app-shell:has(#homeTopNav[hidden]) {
+  --top-row: 0px;
+}
+
+.app-shell[data-top-nav="hidden"] {
+  --top-row: 0px;
+}
+
+.app-shell:has(#flowNav[hidden]) {
+  --flow-row: 0px;
+}
+
+.app-shell[data-flow-nav="hidden"] {
+  --flow-row: 0px;
+}
+
+.app-shell:has(#chatHeader[hidden]) {
+  --chat-row: 0px;
+}
+
+.app-shell[data-chat-header="hidden"] {
+  --chat-row: 0px;
 }
 
 .status-bar { grid-row: 1; }
@@ -238,9 +262,12 @@ button {
 
 .screen-wrap {
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--screen-tint, #fff);
   min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .screen {
@@ -1445,7 +1472,7 @@ button.entry-card:hover {
 
 @media (max-width: 1400px) {
   .app-shell {
-    grid-template-rows: 34px 66px 88px 78px 1fr 118px;
+    grid-template-rows: 34px var(--top-row, 66px) var(--flow-row, 88px) var(--chat-row, 78px) minmax(0, 1fr) 118px;
   }
 
   .status-bar,
@@ -1508,7 +1535,7 @@ button.entry-card:hover {
 @media (max-width: 1400px) and (orientation: landscape) {
   .app-shell {
     border-radius: 0;
-    grid-template-rows: 30px 58px 64px 64px minmax(0, 1fr) 82px;
+    grid-template-rows: 30px var(--top-row, 58px) var(--flow-row, 64px) var(--chat-row, 64px) minmax(0, 1fr) 82px;
   }
 
   .status-bar {
@@ -1569,7 +1596,7 @@ button.entry-card:hover {
   .entry-screen,
   .single-step,
   .complete-screen {
-    padding: 30px 46px 24px;
+    padding: 22px 46px 18px;
   }
 
   .home-screen h1,
@@ -1586,7 +1613,7 @@ button.entry-card:hover {
   .emotion-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
-    margin-top: 26px;
+    margin-top: 22px;
   }
 
   .emotion-grid.compact {
@@ -1594,11 +1621,11 @@ button.entry-card:hover {
   }
 
   .emotion-card {
-    min-height: 250px;
+    min-height: 220px;
     border-width: 4px;
     border-radius: 28px;
-    padding: 24px 16px 18px;
-    gap: 14px;
+    padding: 18px 14px 16px;
+    gap: 10px;
   }
 
   .emotion-card strong {
@@ -1606,14 +1633,14 @@ button.entry-card:hover {
   }
 
   .face-disc {
-    width: 128px;
-    height: 128px;
+    width: 108px;
+    height: 108px;
   }
 
   .primary-cta {
-    margin-top: 28px;
-    min-height: 70px;
-    font-size: 22px;
+    margin-top: 22px;
+    min-height: 62px;
+    font-size: 20px;
   }
 
   .home-hint {
@@ -1676,7 +1703,7 @@ button.entry-card:hover {
 
   .chat-stream {
     padding: 6px 0 10px;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .decide-companion {
