@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css?v=20260609-tablet-scroll-v2">
+  <link rel="stylesheet" href="./styles.css?v=20260610-sus-form-v2">
 </head>
 <body>
   <div class="app-shell" data-theme="neutral">
@@ -90,6 +90,7 @@
                     <option value="19-25歲">19-25 歲</option>
                     <option value="26-35歲">26-35 歲</option>
                     <option value="36-45歲">36-45 歲</option>
+                    <option value="46-54歲">46-54 歲</option>
                     <option value="55歲以上">55 歲以上</option>
                   </select>
                 </label>
@@ -533,6 +534,16 @@
 
           <div class="notify-card" id="completionSummary">老師和爸媽將收到今天的練習摘要。</div>
 
+          <div class="sus-survey-card" id="susSurveyCard" hidden>
+            <div class="sus-survey-copy">
+              <span>測試者問卷</span>
+              <h3>請完成 SUS 使用者測量問卷</h3>
+              <p>謝謝你完成整個體驗。請點擊按鈕或掃描 QR code 填寫問卷，幫助我們優化這個自我調節工具。</p>
+              <a class="sus-survey-button" href="https://docs.google.com/forms/d/e/1FAIpQLSelhrjdb8mHBhtFjiK2fUcYmUj4WUETkdSq8bb9hQdB7wkETw/viewform" target="_blank" rel="noopener noreferrer">填寫 SUS 問卷</a>
+            </div>
+            <img src="https://quickchart.io/qr?size=220&margin=2&text=https%3A%2F%2Fdocs.google.com%2Fforms%2Fd%2Fe%2F1FAIpQLSelhrjdb8mHBhtFjiK2fUcYmUj4WUETkdSq8bb9hQdB7wkETw%2Fviewform" alt="SUS 使用者測量問卷 QR code">
+          </div>
+
           <button class="primary-cta dark" id="restartButton" type="button">回到首頁</button>
         </div>
       </section>
@@ -562,6 +573,6 @@
     </nav>
   </div>
 
-  <script src="./app.js?v=20260609-tablet-scroll-v2"></script>
+  <script src="./app.js?v=20260610-sus-form-v2"></script>
 </body>
 </html>
