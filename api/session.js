@@ -59,6 +59,18 @@ export default async function handler(req, res) {
     if (action === "event") {
       await db.query(
         `
+          insert into research_sessions (id, user_agent, metadata)
+          values ($1, $2, '{}'::jsonb)
+          on conflict (id) do nothing
+        `,
+        [
+          sessionId,
+          cleanText(req.headers["user-agent"], 500)
+        ]
+      );
+
+      await db.query(
+        `
           insert into research_events (session_id, event_type, step, value, payload)
           values ($1, $2, $3, $4, $5)
         `,
@@ -75,6 +87,18 @@ export default async function handler(req, res) {
     }
 
     if (action === "complete") {
+      await db.query(
+        `
+          insert into research_sessions (id, user_agent, metadata)
+          values ($1, $2, '{}'::jsonb)
+          on conflict (id) do nothing
+        `,
+        [
+          sessionId,
+          cleanText(req.headers["user-agent"], 500)
+        ]
+      );
+
       await db.query(
         `
           update research_sessions
